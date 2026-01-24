@@ -4,90 +4,15 @@ import { useIconAnimation } from "@/hooks/use-icon-animation";
 import { PlusIcon, type PlusIconHandle } from "@/components/animated-icons/plus";
 import { RotateCCWIcon, type RotateCCWIconHandle } from "@/components/animated-icons/rotate-ccw";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { collection, getDocs, limit, query, orderBy, startAt, documentId } from "firebase/firestore";
-import { db } from "@/utils/firebase";
 import { Sparkles, RefreshCcw } from "lucide-react";
 import Masonry from "@/components/react-bits/masonry";
-
-// Define the interface for the Masonry item
-interface Item {
-	id: string;
-	img: string;
-	url: string;
-	height: number;
-}
-
-const generateRandomId = () => {
-	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	let autoId = '';
-	for (let i = 0; i < 20; i++) {
-		autoId += chars.charAt(Math.floor(Math.random() * chars.length));
-	}
-	return autoId;
-}
+import { useRandomOutfits } from "@/hooks/use-random-outfits";
+import Loader from "@/components/custom/Loader";
 
 export default function Home() {
 	const plusIcon = useIconAnimation<PlusIconHandle>();
 	const rotateIcon = useIconAnimation<RotateCCWIconHandle>();
-	const [items, setItems] = useState<Item[]>([]);
-	const [loading, setLoading] = useState(true);
-
-	const fetchOutfits = async () => {
-		setLoading(true);
-		
-		try {
-			const outfitsCollection = collection(db, "outfits");
-			const randomId = generateRandomId();
-			
-			// 1. Fetch 100 items starting from a random ID
-			const q1 = query(outfitsCollection, orderBy(documentId()), startAt(randomId), limit(100));
-			const snap1 = await getDocs(q1);
-			
-			let docs = snap1.docs;
-
-			// 2. If we got fewer than 100, fetch the rest from the beginning
-			if (docs.length < 100) {
-				const remaining = 100 - docs.length;
-				const q2 = query(outfitsCollection, orderBy(documentId()), limit(remaining));
-				const snap2 = await getDocs(q2);
-				docs = [...docs, ...snap2.docs];
-			}
-
-			// 3. Map to Items and De-duplicate
-			const uniqueItems = new Map<string, Item>();
-			
-			docs.forEach((doc) => {
-				if (uniqueItems.has(doc.id)) return;
-
-				const data = doc.data();
-				// Get the first image from the images array, fallback to placeholder
-				const imgUrl = Array.isArray(data.images) && data.images.length > 0 
-					? data.images[0] 
-					: "https://placehold.co/600x400";
-				
-				uniqueItems.set(doc.id, {
-					id: doc.id,
-					img: imgUrl,
-					url: `/outfit/${encodeURIComponent(doc.id)}`,
-					height: 0, // Height will be calculated by Masonry based on image aspect ratio
-				});
-			});
-
-			// 4. Shuffle the items to give a more random feel
-			const shuffledItems = Array.from(uniqueItems.values()).sort(() => Math.random() - 0.5);
-			setItems(shuffledItems);
-
-		} catch (error) {
-			console.error("Error fetching outfits:", error);
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		fetchOutfits();
-	}, []);
+	const { items, loading, refetch: fetchOutfits } = useRandomOutfits(100);
 
 	return (
 		<div className="container mx-auto py-8 px-4 md:px-12">
@@ -95,7 +20,6 @@ export default function Home() {
 				<Button 
 					variant={"outline"}
 					{...plusIcon.events}
-					className="rounded-full"
 				>
 					<PlusIcon ref={plusIcon.ref} />
 					Create outfit
@@ -116,7 +40,7 @@ export default function Home() {
 
 			{loading ? (
 				<div className="flex justify-center p-10">
-					Loading...
+					<Loader />
 				</div>
 			) : (
 				<>

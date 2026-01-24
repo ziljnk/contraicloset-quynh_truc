@@ -207,7 +207,7 @@ export default function OutfitDetailPage() {
 
 			{/* Similar Outfits Section */}
 			{similarOutfits.length > 0 && (
-				<div className="mt-16 border-t pt-10">
+				<div className="mt-16 border-t pt-10 pb-20">
 					<h2 className="text-2xl font-bold mb-6">Similar Outfits</h2>
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 						{similarOutfits.map((outfit) => (
