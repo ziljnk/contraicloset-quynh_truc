@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/utils/firebase";
+import { isAdmin } from "@/constant/auth";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -17,5 +18,5 @@ export function useAuth() {
     return () => unsubscribe();
   }, []);
 
-  return { user, loading };
+  return { user, loading, isAdmin: isAdmin(user?.email) };
 }

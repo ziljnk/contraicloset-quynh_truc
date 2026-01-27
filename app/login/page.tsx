@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-	createUserWithEmailAndPassword,
+	signInWithEmailAndPassword,
 	signInWithPopup,
 	GoogleAuthProvider,
 	FacebookAuthProvider,
@@ -13,8 +13,9 @@ import { auth } from "@/utils/firebase";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Loader2, Shirt } from "lucide-react";
+import { toast } from "sonner";
 
-export default function SignUpPage() {
+export default function LoginPage() {
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
@@ -36,20 +37,18 @@ export default function SignUpPage() {
 		setError(null);
 
 		try {
-			await createUserWithEmailAndPassword(
+			await signInWithEmailAndPassword(
 				auth,
 				formData.email,
 				formData.password,
 			);
-			router.push("/");
+			router.push("/"); // Redirect to home page after successful sign in
 		} catch (err: any) {
 			console.error(err);
-			if (err.code === "auth/email-already-in-use") {
-				setError("Email is already in use.");
-			} else if (err.code === "auth/weak-password") {
-				setError("Password should be at least 6 characters.");
+			if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+				setError("Invalid email or password.");
 			} else {
-				setError("Failed to create an account. Please try again.");
+				setError("Failed to sign in. Please try again.");
 			}
 		} finally {
 			setIsLoading(false);
@@ -65,7 +64,7 @@ export default function SignUpPage() {
 			router.push("/");
 		} catch (err: any) {
 			console.error(err);
-			setError("Failed to sign up with Google.");
+			setError("Failed to sign in with Google.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -80,7 +79,7 @@ export default function SignUpPage() {
 			router.push("/");
 		} catch (err: any) {
 			console.error(err);
-			setError("Failed to sign up with Facebook.");
+			setError("Failed to sign in with Facebook.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -91,13 +90,14 @@ export default function SignUpPage() {
 			<div className="w-full max-w-sm space-y-6 rounded-2xl bg-white p-8 shadow-sm ring-1 ring-gray-900/5">
 				<div className="flex flex-col items-center space-y-2 text-center">
 					<div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#342e29] text-white">
+						{/* Using Shirt as a clothes hanger proxy/logo */}
 						<Shirt className="h-6 w-6" />
 					</div>
 					<h1 className="text-xl font-semibold tracking-tight text-gray-900">
-						Welcome to Contraicloset
+						Welcome back to Contraicloset
 					</h1>
 					<p className="text-sm text-gray-500">
-						Sign up to get started
+						Sign in to your account
 					</p>
 				</div>
 
@@ -211,20 +211,24 @@ export default function SignUpPage() {
 						{isLoading ?
 							<>
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								Creating account...
+								Signing in...
 							</>
-						:	"Sign up"}
+						:	"Sign in"}
 					</Button>
 				</form>
 
 				<div className="flex flex-col gap-4 text-center text-sm">
 					<div className="text-gray-500">
-						Already have an account?{" "}
+						Don't have an account?{" "}
 						<Link
-							href="/login"
+							href="/signup"
 							className="font-medium text-gray-900 hover:underline"
+							onClick={(e) => {
+								e.preventDefault();
+								toast("Tính năng đăng kí sẽ được triển khai sau");
+							}}
 						>
-							Sign in
+							Sign up
 						</Link>
 					</div>
 				</div>

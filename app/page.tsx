@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 import { useIconAnimation } from "@/hooks/use-icon-animation";
 import { PlusIcon, type PlusIconHandle } from "@/components/animated-icons/plus";
 import { RotateCCWIcon, type RotateCCWIconHandle } from "@/components/animated-icons/rotate-ccw";
@@ -10,6 +12,8 @@ import { useRandomOutfits } from "@/hooks/use-random-outfits";
 import Loader from "@/components/custom/Loader";
 
 export default function Home() {
+	const router = useRouter();
+	const { isAdmin } = useAuth();
 	const plusIcon = useIconAnimation<PlusIconHandle>();
 	const rotateIcon = useIconAnimation<RotateCCWIconHandle>();
 	const { items, loading, refetch: fetchOutfits } = useRandomOutfits(100);
@@ -20,6 +24,13 @@ export default function Home() {
 				<Button 
 					variant={"outline"}
 					{...plusIcon.events}
+					onClick={() => {
+						if (isAdmin) {
+							router.push("/admin/create-outfit");
+						} else {
+							router.push("/create-outfit");
+						}
+					}}
 				>
 					<PlusIcon ref={plusIcon.ref} />
 					Create outfit

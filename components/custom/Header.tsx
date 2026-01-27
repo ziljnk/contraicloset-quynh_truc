@@ -8,11 +8,11 @@ export default function Header() {
 			<div className="container mx-auto flex h-16 items-center justify-between px-4">
 				<div className="flex items-center gap-2">
 					<Link href="/" className="text-xl font-bold">
-						ContraiCloset
+						Contraicloset
 					</Link>
 				</div>
 
-				<div className="flex items-center gap-2">
+				{/* <div className="flex items-center gap-2">
 					<div className="hidden md:flex">
 						<Button>Sign In</Button>
 					</div>
@@ -20,7 +20,7 @@ export default function Header() {
 						<Menu className="h-5 w-5" />
 						<span className="sr-only">Toggle menu</span>
 					</Button>
-				</div>
+				</div> */}
 			</div>
 		</header>
 	);

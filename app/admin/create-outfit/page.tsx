@@ -1,0 +1,696 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
+import { db } from "@/utils/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+// import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+	ArrowLeft,
+	Image as ImageIcon,
+	Loader2,
+	Plus,
+	Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { UploadIcon, UploadIconHandle } from "@/components/animated-icons/upload";
+import { useIconAnimation } from "@/hooks/use-icon-animation";
+import ImageUploadPreview from "@/components/custom/image-upload-preview";
+import { MultiSelectCombobox } from "@/components/custom/multi-select-combobox";
+import { Checkbox } from "@/components/animate-ui/components/radix/checkbox";
+
+// Constants for Options
+const AESTHETIC_OPTIONS = [
+	{ value: "minimal", label: "Minimal" },
+	{ value: "old_money", label: "Old money / Quiet luxury" },
+	{ value: "streetwear", label: "Streetwear" },
+	{ value: "smart_casual", label: "Smart casual" },
+	{ value: "business_casual", label: "Business casual" },
+	{ value: "vintage", label: "Vintage" },
+	{ value: "k_fashion", label: "K-fashion" },
+	{ value: "sporty_athleisure", label: "Sporty / Athleisure" },
+	{ value: "minimalist", label: "Minimalist" },
+	{ value: "casual", label: "Casual" },
+	{ value: "chic", label: "Chic" },
+	{ value: "y2k", label: "Y2K" },
+];
+
+const OCCASION_OPTIONS = [
+	{ value: "di_hoc", label: "Đi học" },
+	{ value: "di_lam", label: "Đi làm" },
+	{ value: "di_cafe", label: "Đi cafe" },
+	{ value: "hen_ho", label: "Hẹn hò" },
+	{ value: "di_bien", label: "Đi biển" },
+	{ value: "du_tiec", label: "Đi tiệc" },
+	{ value: "daily", label: "Daily / Casual" },
+	{ value: "work", label: "Work / Office" },
+	{ value: "party", label: "Party / Night out" },
+	{ value: "date", label: "Date Night" },
+	{ value: "travel", label: "Travel" },
+];
+
+const FORMALITY_OPTIONS = [
+	{ value: "casual", label: "Casual" },
+	{ value: "smart_casual", label: "Smart casual" },
+	{ value: "business_casual", label: "Business casual" },
+	{ value: "semi_formal", label: "Semi-formal" },
+	{ value: "formal", label: "Formal" },
+];
+
+const SEASON_OPTIONS = [
+	{ value: "xuan", label: "Xuân" },
+	{ value: "ha", label: "Hạ" },
+	{ value: "thu", label: "Thu" },
+	{ value: "dong", label: "Đông" },
+	{ value: "spring", label: "Spring" },
+	{ value: "summer", label: "Summer" },
+	{ value: "autumn", label: "Autumn" },
+	{ value: "winter", label: "Winter" },
+	{ value: "all_season", label: "All Season" },
+];
+
+const COLOR_OPTIONS = [
+	{ value: "neutral_light", label: "Trắng / Be / Neutral sáng" },
+	{ value: "black_grey", label: "Đen / Xám đậm" },
+	{ value: "navy_blue", label: "Navy / Xanh dương" },
+	{ value: "brown_earth", label: "Nâu / Earth tone" },
+	{ value: "pastel", label: "Pastel" },
+	{ value: "bright_colors", label: "Màu nổi bật" },
+	{ value: "black", label: "Black" },
+	{ value: "white", label: "White" },
+	{ value: "neutral", label: "Neutral / Beige" },
+	{ value: "blue", label: "Blue" },
+	{ value: "earth_tone", label: "Earth Tones" },
+	{ value: "colorful", label: "Colorful / Mix" },
+];
+
+const MATERIAL_OPTIONS = [
+	{ value: "cotton", label: "Cotton" },
+	{ value: "denim", label: "Denim" },
+	{ value: "leather", label: "Leather" },
+	{ value: "wool", label: "Wool / Knit" },
+	{ value: "synthetic", label: "Synthetic" },
+];
+
+const PATTERN_OPTIONS = [
+	{ value: "solid", label: "Solid (Trơn)" },
+	{ value: "striped", label: "Striped (Kẻ)" },
+	{ value: "plaid", label: "Plaid (Caro)" },
+	{ value: "floral", label: "Floral (Hoa)" },
+	{ value: "graphic", label: "Graphic / Print" },
+];
+
+const FIT_OPTIONS = [
+	{ value: "oversized", label: "Oversized" },
+	{ value: "regular", label: "Regular / Relaxed" },
+	{ value: "slim", label: "Slim / Fitted" },
+	{ value: "baggy", label: "Baggy" },
+];
+
+const LAYER_COUNT_OPTIONS = [
+	{ value: "1", label: "1 Layer" },
+	{ value: "2", label: "2 Layers" },
+	{ value: "3", label: "3 Layers" },
+	{ value: "4+", label: "4+ Layers" },
+];
+
+// Helper to map layer count to layering_depth string
+const mapLayerCountToDepth = (val: string) => {
+	switch (val) {
+		case "1": return "one_layer";
+		case "2": return "two_layers";
+		case "3": return "three_layers";
+		case "4+": return "four_plus_layers";
+		default: return "one_layer";
+	}
+}
+
+export default function CreateOutfitPage() {
+	const router = useRouter();
+	const { user, loading, isAdmin } = useAuth();
+	const [ isSubmitting, setIsSubmitting ] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const uploadIcon = useIconAnimation<UploadIconHandle>();
+
+	const [ formData, setFormData ] = useState({
+		title: "",
+		imageSource: "",
+		aesthetic: [] as string[],
+		occasion: [] as string[],
+		formality: [] as string[],
+		season: [] as string[],
+		mainColor: [] as string[],
+		material: [] as string[],
+		pattern: [] as string[],
+		fit: [] as string[],
+		layerCount: [] as string[],
+	});
+
+	const [ mainComponents, setMainComponents ] = useState<string[]>([]);
+	const [ productLinks, setProductLinks ] = useState<
+		{ name: string; link: string }[]
+	>([ { name: "", link: "" } ]);
+	const [ imageFiles, setImageFiles ] = useState<File[]>([]);
+	const [ previewUrls, setPreviewUrls ] = useState<string[]>([]);
+
+	// Protect the route
+	useEffect(() => {
+		if (!loading && !isAdmin) {
+			toast.error("You are not authorized to access this page.");
+			router.push("/");
+		}
+	}, [ loading, isAdmin, router ]);
+
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setFormData({ ...formData, [ e.target.name ]: e.target.value });
+	};
+
+	const handleMultiSelectChange = (name: string, value: string[]) => {
+		setFormData({ ...formData, [ name ]: value });
+	};
+
+	const handleComponentChange = (item: string) => {
+		setMainComponents((prev) =>
+			prev.includes(item) ?
+				prev.filter((i) => i !== item)
+				: [ ...prev, item ],
+		);
+	};
+
+	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (e.target.files) {
+			const files = Array.from(e.target.files);
+			// Limit to 10 images total
+			if (imageFiles.length + files.length > 10) {
+				toast.error("Tối đa 10 ảnh cho mỗi set đồ");
+				return;
+			}
+
+			// Filter size < 10MB
+			const validFiles = files.filter(
+				(file) => file.size <= 10 * 1024 * 1024,
+			);
+			if (validFiles.length < files.length) {
+				toast.warning("Một số ảnh bị bỏ qua do vượt quá 10MB");
+			}
+
+			setImageFiles((prev) => [ ...prev, ...validFiles ]);
+			const newPreviews = validFiles.map((file) =>
+				URL.createObjectURL(file),
+			);
+			setPreviewUrls((prev) => [ ...prev, ...newPreviews ]);
+		}
+	};
+
+	const addProductLink = () => {
+		setProductLinks([ ...productLinks, { name: "", link: "" } ]);
+	};
+
+	const updateProductLink = (
+		index: number,
+		field: "name" | "link",
+		value: string,
+	) => {
+		const newLinks = [ ...productLinks ];
+		newLinks[ index ][ field ] = value;
+		setProductLinks(newLinks);
+	};
+
+	const removeProductLink = (index: number) => {
+		// If it's the only one, clear it instead of removing
+		if (productLinks.length === 1) {
+			setProductLinks([ { name: "", link: "" } ]);
+			return;
+		}
+		setProductLinks(productLinks.filter((_, i) => i !== index));
+	};
+
+	const handleSubmit = async () => {
+		if (imageFiles.length === 0) {
+			toast.error("Vui lòng tải lên ít nhất một ảnh.");
+			return;
+		}
+		if (!formData.title) {
+			toast.error("Vui lòng nhập tiêu đề.");
+			return;
+		}
+
+		setIsSubmitting(true);
+
+		try {
+			// 1. Upload Images using API Route
+			const uploadData = new FormData();
+			imageFiles.forEach(file => uploadData.append("files", file));
+
+			const response = await fetch("/api/upload", {
+				method: "POST",
+				body: uploadData,
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || "Lỗi khi tải ảnh lên");
+			}
+
+			const { urls: imageUrls } = await response.json();
+
+			// Filter out empty product links
+			const validProductLinks = productLinks.filter(
+				(l) => l.name.trim() !== "" || l.link.trim() !== "",
+			);
+
+			// 2. Save to Firestore (collection "outfits2")
+			const outfitData = {
+				formality: formData.formality.join("_") || "casual",
+				pattern: formData.pattern.join("_") || "solid",
+				layering_depth: formData.layerCount.length > 0 ? mapLayerCountToDepth(formData.layerCount[ 0 ]) : "one_layer",
+				product_links: validProductLinks,
+				isSaved: true,
+				image_source: formData.imageSource,
+				occasion: formData.occasion.join("_") || "daily",
+				updated_date: serverTimestamp(),
+				main_material: formData.material.join("_") || "cotton",
+				fit_silhouette: formData.fit.join("_") || "relaxed_fit",
+				aesthetic_vibe: formData.aesthetic.join("_") || "streetwear",
+				id: formData.title, // using title as ID prefix or similar as per sample
+				images: imageUrls,
+				saved_by: user ? [ user.uid ] : [],
+				created_date: serverTimestamp(),
+				title: formData.title,
+				color_palette: formData.mainColor.join("_") || "black_grey",
+				season: formData.season.join("_") || "thu",
+				category_composition: mainComponents
+			};
+
+			await addDoc(collection(db, process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!), outfitData);
+
+			toast.success("Outfit created successfully!");
+			// Reset form
+			setFormData({
+				title: "",
+				imageSource: "",
+				aesthetic: [],
+				occasion: [],
+				formality: [],
+				season: [],
+				mainColor: [],
+				material: [],
+				pattern: [],
+				fit: [],
+				layerCount: [],
+			});
+			setMainComponents([]);
+			setProductLinks([ { name: "", link: "" } ]);
+			setImageFiles([]);
+			setPreviewUrls([]);
+		} catch (error) {
+			console.error("Error creating outfit:", error);
+			toast.error("Failed to create outfit: " + (error instanceof Error ? error.message : "Unknown error"));
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	if (loading) {
+		return (
+			<div className="flex h-screen items-center justify-center">
+				<Loader2 className="h-8 w-8 animate-spin" />
+			</div>
+		);
+	}
+
+	if (!isAdmin) {
+		return null;
+	}
+
+	return (
+		<div className="container mx-auto max-w-6xl p-4 py-8 pb-32">
+			{/* Header */ }
+			<div className="mb-6">
+				<Button
+					variant="outline"
+					size="sm"
+					className="mb-4"
+					onClick={ () => router.back() }
+				>
+					<ArrowLeft className="mr-2 h-4 w-4" />
+					Quay lại
+				</Button>
+				<h1 className="text-2xl font-bold text-[#382c25]">
+					Tạo outfit
+				</h1>
+				<p className="text-sm text-muted-foreground">
+					Chia sẻ outfit của bạn với cộng đồng (sẽ được admin xem xét
+					và duyệt)
+				</p>
+			</div>
+
+			{/* Upload Image */ }
+			<div className="mb-8 rounded-lg bg-card md:p-0">
+				<h2 className="mb-4 font-semibold text-[#382c25]">
+					Ảnh set đồ *
+				</h2>
+
+				{/* Preview Area */ }
+				<ImageUploadPreview
+					files={ imageFiles }
+					previewUrls={ previewUrls }
+					setFiles={ setImageFiles }
+					setPreviewUrls={ setPreviewUrls }
+				/>
+
+				<div
+					{ ...uploadIcon.events }
+					onClick={ () => fileInputRef.current?.click() }
+					className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900/50"
+				>
+					<input
+						type="file"
+						accept="image/*"
+						multiple
+						className="hidden"
+						ref={ fileInputRef }
+						onChange={ handleImageChange }
+					/>
+					<div className="mb-4 rounded-full bg-white p-4 shadow-sm dark:bg-gray-800">
+						<ImageIcon className="h-8 w-8 text-gray-400" />
+					</div>
+					<h3 className="mb-1 font-semibold text-[#382c25]">
+						Tải ảnh set đồ
+					</h3>
+					<p className="mb-6 text-sm text-muted-foreground">
+						Kéo & thả hoặc nhấp để chọn tệp ({ imageFiles.length }/10)
+					</p>
+					<Button
+						variant="outline"
+						className="bg-white"
+						type="button"
+					>
+						<UploadIcon ref={ uploadIcon.ref } className="mr-2" /> Chọn tệp
+					</Button>
+				</div>
+				<div className="mt-4 space-y-1 text-xs text-muted-foreground">
+					<p>• Định dạng hỗ trợ: JPG, PNG, WebP</p>
+					<p>• Dung lượng tối đa: 10MB mỗi ảnh</p>
+					<p>• Kích thước tối thiểu: 1KB mỗi ảnh</p>
+					<p>• Tối đa 10 ảnh cho mỗi set đồ</p>
+					<p>• Ảnh đầu tiên sẽ được dùng làm ảnh bìa chính</p>
+					<p>• Hệ thống tự động resize ảnh &gt; 5MB để tối ưu</p>
+				</div>
+			</div>
+
+			{/* Basic Info */ }
+			<div className="mb-8 rounded-lg border bg-card p-6 shadow-sm">
+				<h2 className="mb-4 text-lg font-semibold text-[#382c25]">
+					Thông tin cơ bản
+				</h2>
+				<div className="space-y-6">
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-[#382c25]">
+							Tiêu đề *
+						</label>
+						<Input
+							name="title"
+							value={ formData.title }
+							onChange={ handleChange }
+							placeholder="Đặt tiêu đề hấp dẫn cho set đồ của bạn..."
+							className="bg-white"
+						/>
+					</div>
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-[#382c25]">
+							Nguồn ảnh (Link)
+						</label>
+						<Input
+							name="imageSource"
+							value={ formData.imageSource }
+							onChange={ handleChange }
+							placeholder="https://..."
+							className="bg-white"
+						/>
+					</div>
+				</div>
+			</div>
+
+			{/* Attributes */ }
+			<div className="mb-8 rounded-lg border bg-card p-6 shadow-sm">
+				<h2 className="mb-4 text-lg font-semibold text-[#382c25]">
+					Thuộc tính set đồ
+				</h2>
+				<div className="grid gap-x-6 gap-y-6 md:grid-cols-2">
+					{/* 1. Aesthetic */ }
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-muted-foreground">
+							1. Aesthetic / Vibe
+						</label>
+						<MultiSelectCombobox
+							options={ AESTHETIC_OPTIONS }
+							value={ formData.aesthetic }
+							onChange={ (v) => handleMultiSelectChange("aesthetic", v) }
+							placeholder="Chọn Aesthetic / Vibe"
+						/>
+					</div>
+					{/* 2. Occasion */ }
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-muted-foreground">
+							2. Dịp sử dụng
+						</label>
+						<MultiSelectCombobox
+							options={ OCCASION_OPTIONS }
+							value={ formData.occasion }
+							onChange={ (v) => handleMultiSelectChange("occasion", v) }
+							placeholder="Chọn Dịp sử dụng"
+						/>
+					</div>
+					{/* 3. Formality */ }
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-muted-foreground">
+							3. Mức độ trang trọng
+						</label>
+						<MultiSelectCombobox
+							options={ FORMALITY_OPTIONS }
+							value={ formData.formality }
+							onChange={ (v) => handleMultiSelectChange("formality", v) }
+							placeholder="Chọn Mức độ trang trọng"
+						/>
+					</div>
+					{/* 4. Season */ }
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-muted-foreground">
+							4. Mùa / Khí hậu
+						</label>
+						<MultiSelectCombobox
+							options={ SEASON_OPTIONS }
+							value={ formData.season }
+							onChange={ (v) => handleMultiSelectChange("season", v) }
+							placeholder="Chọn Mùa / Khí hậu"
+						/>
+					</div>
+					{/* 5. Main Color */ }
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-muted-foreground">
+							5. Màu chủ đạo
+						</label>
+						<MultiSelectCombobox
+							options={ COLOR_OPTIONS }
+							value={ formData.mainColor }
+							onChange={ (v) => handleMultiSelectChange("mainColor", v) }
+							placeholder="Chọn Màu chủ đạo"
+						/>
+					</div>
+					{/* 6. Material */ }
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-muted-foreground">
+							6. Chất liệu chính
+						</label>
+						<MultiSelectCombobox
+							options={ MATERIAL_OPTIONS }
+							value={ formData.material }
+							onChange={ (v) => handleMultiSelectChange("material", v) }
+							placeholder="Chọn Chất liệu chính"
+						/>
+					</div>
+					{/* 7. Pattern */ }
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-muted-foreground">
+							7. Họa tiết
+						</label>
+						<MultiSelectCombobox
+							options={ PATTERN_OPTIONS }
+							value={ formData.pattern }
+							onChange={ (v) => handleMultiSelectChange("pattern", v) }
+							placeholder="Chọn Họa tiết"
+						/>
+					</div>
+					{/* 8. Fit */ }
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-muted-foreground">
+							8. Fit / Silhouette
+						</label>
+						<MultiSelectCombobox
+							options={ FIT_OPTIONS }
+							value={ formData.fit }
+							onChange={ (v) => handleMultiSelectChange("fit", v) }
+							placeholder="Chọn Fit / Silhouette"
+						/>
+					</div>
+					{/* 9. Layers */ }
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-muted-foreground">
+							9. Số lớp phối
+						</label>
+						<MultiSelectCombobox
+							options={ LAYER_COUNT_OPTIONS }
+							value={ formData.layerCount }
+							onChange={ (v) => handleMultiSelectChange("layerCount", v) }
+							placeholder="Chọn Số lớp phối"
+						/>
+					</div>
+				</div>
+
+				{/* 10. Components */ }
+				<div className="mt-8 space-y-4">
+					<label className="block text-sm font-medium text-[#382c25]">
+						10. Thành phần chính (có thể chọn nhiều)
+					</label>
+					<div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-4">
+						{ [
+							"Blazer / Suit jacket",
+							"Áo sơ mi / Polo / Tee",
+							"Quần tây / Chinos / Jeans",
+							"Outerwear (Coat, Trench, Jacket)",
+							"Giày",
+							"Phụ kiện",
+						].map((item) => (
+							<label
+								key={ item }
+								className={ cn(
+									"flex cursor-pointer items-center space-x-3 rounded-md border p-3 transition-colors hover:bg-accent",
+									mainComponents.includes(item) &&
+									"border-[#382c25] bg-accent/50",
+								) }
+							>
+								<Checkbox
+									checked={ mainComponents.includes(item) }
+									onCheckedChange={ () => handleComponentChange(item) }
+								/>
+								<span className="text-sm text-gray-700">
+									{ item }
+								</span>
+							</label>
+						)) }
+					</div>
+				</div>
+			</div>
+
+			{/* Product Links */ }
+			<div className="mb-20 rounded-lg border bg-white p-6 shadow-sm">
+				<h2 className="mb-4 flex items-center text-lg font-semibold text-[#382c25]">
+					<span className="mr-2">🏷️</span> Liên kết sản phẩm
+				</h2>
+				<div className="space-y-4">
+					{ productLinks.map((link, index) => (
+						<div
+							key={ index }
+							className="grid gap-4 md:grid-cols-[1fr,1fr,auto]"
+						>
+							<div className="space-y-2">
+								{ index === 0 && (
+									<label className="text-sm font-medium text-muted-foreground">
+										Tên sản phẩm
+									</label>
+								) }
+								<Input
+									placeholder="Ví dụ: Áo, Quần, Giày..."
+									value={ link.name }
+									onChange={ (e) =>
+										updateProductLink(
+											index,
+											"name",
+											e.target.value,
+										)
+									}
+									className="bg-white"
+								/>
+							</div>
+							<div className="space-y-2">
+								{ index === 0 && (
+									<label className="text-sm font-medium text-muted-foreground">
+										Liên kết tiếp thị
+									</label>
+								) }
+								<Input
+									placeholder="https://..."
+									value={ link.link }
+									onChange={ (e) =>
+										updateProductLink(
+											index,
+											"link",
+											e.target.value,
+										)
+									}
+									className="bg-white"
+								/>
+							</div>
+							<div className={ index === 0 ? "pt-8" : "" }>
+								<div className="flex gap-1">
+									{ index === productLinks.length - 1 && (
+										<Button
+											size="icon"
+											className="h-10 w-10 bg-[#382c25] hover:bg-[#382c25]/90"
+											onClick={ addProductLink }
+											type="button"
+										>
+											<Plus className="h-5 w-5" />
+										</Button>
+									) }
+									{ productLinks.length > 1 && (
+										<Button
+											size="icon"
+											variant="ghost"
+											className="h-10 w-10 text-red-500 hover:bg-red-50 hover:text-red-600"
+											onClick={ () =>
+												removeProductLink(index)
+											}
+											type="button"
+										>
+											<Trash2 className="h-5 w-5" />
+										</Button>
+									) }
+								</div>
+							</div>
+						</div>
+					)) }
+				</div>
+			</div>
+
+			{/* Footer Actions */ }
+			<div className="container mx-auto flex justify-end gap-3">
+				<Button
+					variant="outline"
+					className="min-w-[100px] border-gray-200"
+					onClick={ () => router.back() }
+					type="button"
+				>
+					Hủy
+				</Button>
+				<Button
+					className="min-w-[150px] bg-[#382c25] text-white hover:bg-[#382c25]/90"
+					onClick={ handleSubmit }
+					disabled={ isSubmitting }
+				>
+					{ isSubmitting ?
+						<>
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />{ " " }
+							Vui lòng chờ...
+						</>
+						: "Gửi chờ duyệt" }
+				</Button>
+			</div>
+		</div>
+	);
+}

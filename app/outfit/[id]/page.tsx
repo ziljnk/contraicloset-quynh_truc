@@ -31,28 +31,28 @@ export default function OutfitDetailPage() {
 		} catch (e) {
 			return rawId;
 		}
-	}, [rawId]);
+	}, [ rawId ]);
 
-	const [outfit, setOutfit] = React.useState<any>(null);
-	const [similarOutfits, setSimilarOutfits] = React.useState<any[]>([]);
-	const [loading, setLoading] = React.useState(true);
+	const [ outfit, setOutfit ] = React.useState<any>(null);
+	const [ similarOutfits, setSimilarOutfits ] = React.useState<any[]>([]);
+	const [ loading, setLoading ] = React.useState(true);
 
 	React.useEffect(() => {
 		async function fetchOutfit() {
 			if (!id) return;
 
 			try {
-				const docRef = doc(db, "outfits", id);
+				const docRef = doc(db, process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!, id);
 				const docSnap = await getDoc(docRef);
 
 				if (docSnap.exists()) {
 					const data = docSnap.data();
 					console.log("data", data);
-					
+
 					const currentOutfitData = {
 						id: docSnap.id,
 						title: data.title || `#${id.slice(0, 6)}`,
-						images: data.images || ["https://placehold.co/600x900"],
+						images: data.images || [ "https://placehold.co/600x900" ],
 						source: data.image_source || "",
 						aesthetic: data.aesthetic,
 						occasion: data.occasion,
@@ -68,7 +68,7 @@ export default function OutfitDetailPage() {
 					setOutfit(currentOutfitData);
 
 					// Fetch candidates for similarity check
-					const outfitsRef = collection(db, "outfits");
+					const outfitsRef = collection(db, process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!);
 					const q = query(outfitsRef, limit(100));
 					const querySnapshot = await getDocs(q);
 
@@ -102,7 +102,7 @@ export default function OutfitDetailPage() {
 		}
 
 		fetchOutfit();
-	}, [id]);
+	}, [ id ]);
 
 	if (loading)
 		return (
@@ -117,7 +117,7 @@ export default function OutfitDetailPage() {
 				<Button
 					variant="ghost"
 					className="mb-6 pl-0"
-					onClick={() => router.back()}
+					onClick={ () => router.back() }
 				>
 					<ArrowLeft className="mr-2 h-4 w-4" /> Back
 				</Button>
@@ -130,24 +130,24 @@ export default function OutfitDetailPage() {
 			<Button
 				variant="ghost"
 				className="mb-6 pl-0 hover:pl-2 transition-all"
-				onClick={() => router.back()}
+				onClick={ () => router.back() }
 			>
 				<ArrowLeft className="mr-2 h-4 w-4" />
 				Back to Gallery
 			</Button>
 
 			<div className="flex flex-col lg:flex-row gap-8 lg:h-[calc(100vh-200px)]">
-				{/* Left side - Image Carousel */}
+				{/* Left side - Image Carousel */ }
 				<div className="w-full lg:w-3/5 bg-secondary/20 rounded-xl relative flex items-center justify-center p-4 lg:p-12">
 					<Carousel className="w-full max-w-sm lg:max-w-md">
 						<CarouselContent>
-							{outfit.images.map(
+							{ outfit.images.map(
 								(image: string, index: number) => (
-									<CarouselItem key={index}>
+									<CarouselItem key={ index }>
 										<div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg shadow-xl">
 											<Image
-												src={image}
-												alt={`${outfit.title} - Image ${index + 1}`}
+												src={ image }
+												alt={ `${outfit.title} - Image ${index + 1}` }
 												fill
 												sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 												className="object-cover"
@@ -156,24 +156,24 @@ export default function OutfitDetailPage() {
 										</div>
 									</CarouselItem>
 								),
-							)}
+							) }
 						</CarouselContent>
-						{outfit.images.length > 1 && (
+						{ outfit.images.length > 1 && (
 							<>
 								<CarouselPrevious />
 								<CarouselNext />
 							</>
-						)}
+						) }
 					</Carousel>
 				</div>
 
-				{/* Right side - Details */}
+				{/* Right side - Details */ }
 				<div className="w-full lg:w-2/5 flex flex-col h-full overflow-y-auto">
 					<div className="mb-8">
 						<h1 className="text-3xl font-bold mb-4">
-							{outfit.title}
+							{ outfit.title }
 						</h1>
-						{outfit.source && <SourceLink url={outfit.source} />}
+						{ outfit.source && <SourceLink url={ outfit.source } /> }
 					</div>
 
 					<div className="flex-1">
@@ -182,22 +182,22 @@ export default function OutfitDetailPage() {
 								Outfit Items
 							</h2>
 							<Badge variant="secondary" className="px-3 py-1">
-								{outfit.items?.length || 0} items
+								{ outfit.items?.length || 0 } items
 							</Badge>
 						</div>
 
-						{outfit.items && outfit.items.length > 0 ?
+						{ outfit.items && outfit.items.length > 0 ?
 							<div className="space-y-4">
-								{outfit.items.map(
+								{ outfit.items.map(
 									(item: any, index: number) => (
 										<OutfitItemLink
-											key={index}
-											item={item}
+											key={ index }
+											item={ item }
 										/>
 									),
-								)}
+								) }
 							</div>
-						:	<div className="text-muted-foreground italic p-4 bg-muted/50 rounded-lg text-center">
+							: <div className="text-muted-foreground italic p-4 bg-muted/50 rounded-lg text-center">
 								No items linked to this outfit yet.
 							</div>
 						}
@@ -205,17 +205,17 @@ export default function OutfitDetailPage() {
 				</div>
 			</div>
 
-			{/* Similar Outfits Section */}
-			{similarOutfits.length > 0 && (
+			{/* Similar Outfits Section */ }
+			{ similarOutfits.length > 0 && (
 				<div className="mt-16 border-t pt-10 pb-20">
 					<h2 className="text-2xl font-bold mb-6">Similar Outfits</h2>
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-						{similarOutfits.map((outfit) => (
-							<SimilarOutfitCard key={outfit.id} outfit={outfit} />
-						))}
+						{ similarOutfits.map((outfit) => (
+							<SimilarOutfitCard key={ outfit.id } outfit={ outfit } />
+						)) }
 					</div>
 				</div>
-			)}
+			) }
 		</div>
 	);
 }

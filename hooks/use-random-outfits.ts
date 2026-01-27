@@ -19,20 +19,20 @@ const generateRandomId = () => {
 }
 
 export function useRandomOutfits(count: number = 50) {
-    const [items, setItems] = useState<OutfitItem[]>([]);
-	const [loading, setLoading] = useState(true);
+	const [ items, setItems ] = useState<OutfitItem[]>([]);
+	const [ loading, setLoading ] = useState(true);
 
-    const fetchOutfits = useCallback(async () => {
+	const fetchOutfits = useCallback(async () => {
 		setLoading(true);
-		
+
 		try {
-			const outfitsCollection = collection(db, "outfits");
+			const outfitsCollection = collection(db, process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!);
 			const randomId = generateRandomId();
-			
+
 			// 1. Fetch count items starting from a random ID
 			const q1 = query(outfitsCollection, orderBy(documentId()), startAt(randomId), limit(count));
 			const snap1 = await getDocs(q1);
-			
+
 			let docs = snap1.docs;
 
 			// 2. If we got fewer than count, fetch the rest from the beginning
@@ -40,21 +40,21 @@ export function useRandomOutfits(count: number = 50) {
 				const remaining = count - docs.length;
 				const q2 = query(outfitsCollection, orderBy(documentId()), limit(remaining));
 				const snap2 = await getDocs(q2);
-				docs = [...docs, ...snap2.docs];
+				docs = [ ...docs, ...snap2.docs ];
 			}
 
 			// 3. Map to Items and De-duplicate
 			const uniqueItems = new Map<string, OutfitItem>();
-			
+
 			docs.forEach((doc) => {
 				if (uniqueItems.has(doc.id)) return;
 
 				const data = doc.data();
 				// Get the first image from the images array, fallback to placeholder
-				const imgUrl = Array.isArray(data.images) && data.images.length > 0 
-					? data.images[0] 
+				const imgUrl = Array.isArray(data.images) && data.images.length > 0
+					? data.images[ 0 ]
 					: "https://placehold.co/600x400";
-				
+
 				uniqueItems.set(doc.id, {
 					id: doc.id,
 					img: imgUrl,
@@ -72,11 +72,11 @@ export function useRandomOutfits(count: number = 50) {
 		} finally {
 			setLoading(false);
 		}
-	}, [count]);
+	}, [ count ]);
 
-    useEffect(() => {
-        fetchOutfits();
-    }, [fetchOutfits]);
+	useEffect(() => {
+		fetchOutfits();
+	}, [ fetchOutfits ]);
 
-    return { items, loading, refetch: fetchOutfits };
+	return { items, loading, refetch: fetchOutfits };
 }

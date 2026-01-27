@@ -31,30 +31,30 @@ const generateRandomId = () => {
 }
 
 export default function SearchPage() {
-	const [items, setItems] = useState<OutfitItem[]>([]);
-	const [loading, setLoading] = useState(true);
+	const [ items, setItems ] = useState<OutfitItem[]>([]);
+	const [ loading, setLoading ] = useState(true);
 
 	// Filter states
-	const [aesthetic, setAesthetic] = useState("all");
-	const [occasion, setOccasion] = useState("all");
-	const [formality, setFormality] = useState("all");
-	const [season, setSeason] = useState("all");
-	const [color, setColor] = useState("all");
-	const [keyword, setKeyword] = useState("");
+	const [ aesthetic, setAesthetic ] = useState("all");
+	const [ occasion, setOccasion ] = useState("all");
+	const [ formality, setFormality ] = useState("all");
+	const [ season, setSeason ] = useState("all");
+	const [ color, setColor ] = useState("all");
+	const [ keyword, setKeyword ] = useState("");
 
 	const fetchOutfits = async () => {
 		setLoading(true);
 		setItems([]);
-		
+
 		try {
-			const outfitsCollection = collection(db, "outfits");
-			
+			const outfitsCollection = collection(db, process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!);
+
 			// Check if any filter is active
-			const hasFilters = 
-				(aesthetic && aesthetic !== "all") || 
-				(occasion && occasion !== "all") || 
-				(formality && formality !== "all") || 
-				(season && season !== "all") || 
+			const hasFilters =
+				(aesthetic && aesthetic !== "all") ||
+				(occasion && occasion !== "all") ||
+				(formality && formality !== "all") ||
+				(season && season !== "all") ||
 				(color && color !== "all") ||
 				(keyword.trim() !== "");
 
@@ -62,24 +62,24 @@ export default function SearchPage() {
 				// Random fetch logic
 				const randomId = generateRandomId();
 				const count = 50;
-				
+
 				const q1 = query(outfitsCollection, orderBy(documentId()), startAt(randomId), limit(count));
 				const snap1 = await getDocs(q1);
-				
+
 				let docs = snap1.docs;
 
 				if (docs.length < count) {
 					const remaining = count - docs.length;
 					const q2 = query(outfitsCollection, orderBy(documentId()), limit(remaining));
 					const snap2 = await getDocs(q2);
-					docs = [...docs, ...snap2.docs];
+					docs = [ ...docs, ...snap2.docs ];
 				}
 
 				const uniqueItems = new Map<string, OutfitItem>();
 				docs.forEach((doc) => {
 					if (uniqueItems.has(doc.id)) return;
 					const data = doc.data();
-					const imgUrl = Array.isArray(data.images) && data.images.length > 0 ? data.images[0] : "https://placehold.co/600x400";
+					const imgUrl = Array.isArray(data.images) && data.images.length > 0 ? data.images[ 0 ] : "https://placehold.co/600x400";
 					uniqueItems.set(doc.id, {
 						id: doc.id,
 						img: imgUrl,
@@ -106,20 +106,20 @@ export default function SearchPage() {
 				const fetchedItems: OutfitItem[] = [];
 				snapshot.forEach((doc) => {
 					const data = doc.data();
-					
+
 					// Basic Text Search implementation
 					if (keyword.trim() !== "") {
 						const lowerKeyword = keyword.toLowerCase();
 						const title = (data.title || "").toLowerCase();
 						const id = (data.id || "").toLowerCase();
-						
+
 						// Search in both title and id
 						if (!title.includes(lowerKeyword) && !id.includes(lowerKeyword)) {
 							return;
 						}
 					}
 
-					const imgUrl = Array.isArray(data.images) && data.images.length > 0 ? data.images[0] : "https://placehold.co/600x400";
+					const imgUrl = Array.isArray(data.images) && data.images.length > 0 ? data.images[ 0 ] : "https://placehold.co/600x400";
 					fetchedItems.push({
 						id: doc.id,
 						img: imgUrl,
@@ -140,7 +140,7 @@ export default function SearchPage() {
 
 	useEffect(() => {
 		fetchOutfits();
-	}, [aesthetic, occasion, formality, season, color, keyword]);
+	}, [ aesthetic, occasion, formality, season, color, keyword ]);
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -158,14 +158,14 @@ export default function SearchPage() {
 					<Input
 						type="search"
 						placeholder="Search..."
-						value={keyword}
-						onChange={(e) => setKeyword(e.target.value)}
+						value={ keyword }
+						onChange={ (e) => setKeyword(e.target.value) }
 						className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					/>
 				</div>
 
 				<div className="flex w-full gap-2 overflow-x-auto pb-2 items-center justify-start md:justify-center no-scrollbar">
-					<Select value={aesthetic} onValueChange={setAesthetic}>
+					<Select value={ aesthetic } onValueChange={ setAesthetic }>
 						<SelectTrigger className="w-30 rounded-full">
 							<SelectValue placeholder="Aesthetic" />
 						</SelectTrigger>
@@ -191,7 +191,7 @@ export default function SearchPage() {
 							</SelectItem>
 						</SelectContent>
 					</Select>
-					<Select value={occasion} onValueChange={setOccasion}>
+					<Select value={ occasion } onValueChange={ setOccasion }>
 						<SelectTrigger className="w-30 rounded-full">
 							<SelectValue placeholder="Dịp" />
 						</SelectTrigger>
@@ -205,7 +205,7 @@ export default function SearchPage() {
 							<SelectItem value="du_tiec">Đi tiệc</SelectItem>
 						</SelectContent>
 					</Select>
-					<Select value={formality} onValueChange={setFormality}>
+					<Select value={ formality } onValueChange={ setFormality }>
 						<SelectTrigger className="w-35 rounded-full">
 							<SelectValue placeholder="Trang trọng" />
 						</SelectTrigger>
@@ -224,7 +224,7 @@ export default function SearchPage() {
 							<SelectItem value="formal">Formal</SelectItem>
 						</SelectContent>
 					</Select>
-					<Select value={season} onValueChange={setSeason}>
+					<Select value={ season } onValueChange={ setSeason }>
 						<SelectTrigger className="w-27.5 rounded-full">
 							<SelectValue placeholder="Mùa" />
 						</SelectTrigger>
@@ -236,7 +236,7 @@ export default function SearchPage() {
 							<SelectItem value="dong">Đông</SelectItem>
 						</SelectContent>
 					</Select>
-					<Select value={color} onValueChange={setColor}>
+					<Select value={ color } onValueChange={ setColor }>
 						<SelectTrigger className="w-30 rounded-full">
 							<SelectValue placeholder="Màu sắc" />
 						</SelectTrigger>
@@ -263,23 +263,23 @@ export default function SearchPage() {
 				</div>
 			</div>
 
-			{loading ? (
+			{ loading ? (
 				<div className="flex justify-center p-10">
 					<Loader />
 				</div>
 			) : (
 				<Masonry
-					items={items}
+					items={ items }
 					ease="power3.out"
-					duration={0.6}
-					stagger={0.05}
+					duration={ 0.6 }
+					stagger={ 0.05 }
 					animateFrom="bottom"
 					scaleOnHover
-					hoverScale={0.95}
+					hoverScale={ 0.95 }
 					blurToFocus
-					colorShiftOnHover={false}
+					colorShiftOnHover={ false }
 				/>
-			)}
+			) }
 		</div>
 	);
 }
