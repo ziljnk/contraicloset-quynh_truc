@@ -37,7 +37,7 @@ export function MultiSelectCombobox({
 }: MultiSelectComboboxProps) {
   const anchor = useComboboxAnchor()
 
-  const [inputValue, setInputValue] = React.useState("")
+  const [ inputValue, setInputValue ] = React.useState("")
 
   const selectedOptions = options.filter((o) => value.includes(o.value))
 
@@ -48,38 +48,38 @@ export function MultiSelectCombobox({
   return (
     <Combobox
       multiple
-      items={options}
-      value={selectedOptions}
-      onValueChange={handleValueChange}
-      itemToString={(item) => item ? item.label : ""}
-      inputValue={inputValue}
-      onInputValueChange={setInputValue}
-      filterFn={(item, search) => item.label.toLowerCase().includes(search.toLowerCase())}
+      items={ options }
+      value={ selectedOptions }
+      onValueChange={ handleValueChange }
+      itemToStringLabel={ (item) => item ? item.label : "" }
+      inputValue={ inputValue }
+      onInputValueChange={ (val) => setInputValue(val) }
+      filter={ (item, search) => item.label.toLowerCase().includes(search.toLowerCase()) }
     >
-      <ComboboxChips ref={anchor} className={className}>
+      <ComboboxChips ref={ anchor } className={ className }>
         <ComboboxValue>
-          {(values) => (
+          { (values) => (
             <React.Fragment>
-              {values.map((item) => (
-                <ComboboxChip key={item.value}>
-                  {item.label}
+              { values.map((item: any) => (
+                <ComboboxChip key={ item.value }>
+                  { item.label }
                 </ComboboxChip>
-              ))}
-              <ComboboxChipsInput 
-                placeholder={values.length === 0 ? placeholder : undefined} 
+              )) }
+              <ComboboxChipsInput
+                placeholder={ values.length === 0 ? placeholder : undefined }
               />
             </React.Fragment>
-          )}
+          ) }
         </ComboboxValue>
       </ComboboxChips>
-      <ComboboxContent anchor={anchor}>
+      <ComboboxContent anchor={ anchor }>
         <ComboboxEmpty>No items found.</ComboboxEmpty>
         <ComboboxList>
-          {(item) => (
-            <ComboboxItem key={item.value} value={item}>
-              {item.label}
+          { (item: any) => (
+            <ComboboxItem key={ item.value } value={ item }>
+              { item.label }
             </ComboboxItem>
-          )}
+          ) }
         </ComboboxList>
       </ComboboxContent>
     </Combobox>
