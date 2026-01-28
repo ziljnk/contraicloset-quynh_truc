@@ -7,9 +7,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { signOut } from "firebase/auth";
 import { auth } from "@/utils/firebase";
 import { useRouter } from "next/navigation";
+import { useSavedOutfits } from "@/hooks/use-saved-outfits";
+import Masonry from "@/components/react-bits/masonry";
 
 export default function BookmarkPage() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { items, loading: outfitsLoading } = useSavedOutfits();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -21,7 +24,7 @@ export default function BookmarkPage() {
     }
   };
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="flex h-[80vh] w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
@@ -80,28 +83,49 @@ export default function BookmarkPage() {
         </div>
       </div>
 
-      {/* Empty State Content */}
-      <div className="flex flex-col items-center justify-center pt-10">
-        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gray-50">
-          <Bookmark className="h-8 w-8 text-gray-400" />
+      {/* Content Section */}
+      {outfitsLoading ? (
+        <div className="flex h-[50vh] w-full items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
         </div>
+      ) : items.length > 0 ? (
+        <div className="px-2 md:px-8">
+          <Masonry
+            items={items}
+            ease="power3.out"
+            duration={0.6}
+            stagger={0.05}
+            animateFrom="bottom"
+            scaleOnHover
+            hoverScale={0.95}
+            blurToFocus
+            colorShiftOnHover={false}
+          />
+        </div>
+      ) : (
+        /* Empty State Content */
+        <div className="flex flex-col items-center justify-center pt-10">
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gray-50">
+            <Bookmark className="h-8 w-8 text-gray-400" />
+          </div>
 
-        <h2 className="mb-2 text-lg font-medium text-[#342e29]">
-          Chưa có set đồ nào được lưu
-        </h2>
-        
-        <p className="mb-8 text-center text-sm text-gray-500 max-w-md">
-          Khám phá bảng tin và lưu lại những set đồ bạn yêu thích!
-        </p>
+          <h2 className="mb-2 text-lg font-medium text-[#342e29]">
+            Chưa có set đồ nào được lưu
+          </h2>
+          
+          <p className="mb-8 text-center text-sm text-gray-500 max-w-md">
+            Khám phá bảng tin và lưu lại những set đồ bạn yêu thích!
+          </p>
 
-        <Link href="/">
-          <Button 
-            className="h-10 px-8 font-medium"
-          >
-            Tìm cảm hứng
-          </Button>
-        </Link>
-      </div>
+          <Link href="/">
+            <Button 
+              className="h-10 px-8 font-medium"
+            >
+              Tìm cảm hứng
+            </Button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

@@ -19,8 +19,8 @@ interface BookmarkIconProps extends HTMLAttributes<HTMLDivElement> {
 const BOOKMARK_VARIANTS: Variants = {
 	normal: { scaleY: 1, scaleX: 1 },
 	animate: {
-		scaleY: [1, 1.3, 0.9, 1.05, 1],
-		scaleX: [1, 0.9, 1.1, 0.95, 1],
+		scaleY: [ 1, 1.3, 0.9, 1.05, 1 ],
+		scaleX: [ 1, 0.9, 1.1, 0.95, 1 ],
 		transition: {
 			duration: 0.6,
 			ease: "easeOut",
@@ -49,7 +49,7 @@ const BookmarkIcon = forwardRef<BookmarkIconHandle, BookmarkIconProps>(
 					controls.start("animate");
 				}
 			},
-			[controls, onMouseEnter],
+			[ controls, onMouseEnter ],
 		);
 
 		const handleMouseLeave = useCallback(
@@ -60,32 +60,32 @@ const BookmarkIcon = forwardRef<BookmarkIconHandle, BookmarkIconProps>(
 					controls.start("normal");
 				}
 			},
-			[controls, onMouseLeave],
+			[ controls, onMouseLeave ],
 		);
 
 		return (
 			<div
-				className={cn(className)}
-				onMouseEnter={handleMouseEnter}
-				onMouseLeave={handleMouseLeave}
-				{...props}
+				className={ cn(className) }
+				onMouseEnter={ handleMouseEnter }
+				onMouseLeave={ handleMouseLeave }
+				{ ...props }
 			>
 				<svg
 					fill="none"
-					height={size}
+					height={ size }
 					stroke="currentColor"
 					strokeLinecap="round"
 					strokeLinejoin="round"
 					strokeWidth="2"
 					viewBox="0 0 24 24"
-					width={size}
+					width={ size }
 					xmlns="http://www.w3.org/2000/svg"
 				>
 					<motion.path
-						animate={controls}
+						animate={ controls }
 						d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"
-						style={{ originY: 0.5, originX: 0.5 }}
-						variants={BOOKMARK_VARIANTS}
+						style={ { originY: 0.5, originX: 0.5 } }
+						variants={ BOOKMARK_VARIANTS }
 					/>
 				</svg>
 			</div>

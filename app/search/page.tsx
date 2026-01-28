@@ -19,6 +19,7 @@ interface OutfitItem {
 	img: string;
 	url: string;
 	height: number;
+	saved_by: string[];
 }
 
 const generateRandomId = () => {
@@ -85,6 +86,7 @@ export default function SearchPage() {
 						img: imgUrl,
 						url: `/outfit/${encodeURIComponent(doc.id)}`,
 						height: 0,
+						saved_by: data.saved_by || [],
 					});
 				});
 
@@ -124,6 +126,7 @@ export default function SearchPage() {
 						id: doc.id,
 						img: imgUrl,
 						url: `/outfit/${encodeURIComponent(doc.id)}`,
+						saved_by: data.saved_by || [],
 						height: 0,
 					});
 				});

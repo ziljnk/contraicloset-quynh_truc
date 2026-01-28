@@ -23,100 +23,18 @@ import ImageUploadPreview from "@/components/custom/image-upload-preview";
 import { MultiSelectCombobox } from "@/components/custom/multi-select-combobox";
 import { Checkbox } from "@/components/animate-ui/components/radix/checkbox";
 
-// Constants for Options
-const AESTHETIC_OPTIONS = [
-	{ value: "minimal", label: "Minimal" },
-	{ value: "old_money", label: "Old money / Quiet luxury" },
-	{ value: "streetwear", label: "Streetwear" },
-	{ value: "smart_casual", label: "Smart casual" },
-	{ value: "business_casual", label: "Business casual" },
-	{ value: "vintage", label: "Vintage" },
-	{ value: "k_fashion", label: "K-fashion" },
-	{ value: "sporty_athleisure", label: "Sporty / Athleisure" },
-	{ value: "minimalist", label: "Minimalist" },
-	{ value: "casual", label: "Casual" },
-	{ value: "chic", label: "Chic" },
-	{ value: "y2k", label: "Y2K" },
-];
-
-const OCCASION_OPTIONS = [
-	{ value: "di_hoc", label: "Đi học" },
-	{ value: "di_lam", label: "Đi làm" },
-	{ value: "di_cafe", label: "Đi cafe" },
-	{ value: "hen_ho", label: "Hẹn hò" },
-	{ value: "di_bien", label: "Đi biển" },
-	{ value: "du_tiec", label: "Đi tiệc" },
-	{ value: "daily", label: "Daily / Casual" },
-	{ value: "work", label: "Work / Office" },
-	{ value: "party", label: "Party / Night out" },
-	{ value: "date", label: "Date Night" },
-	{ value: "travel", label: "Travel" },
-];
-
-const FORMALITY_OPTIONS = [
-	{ value: "casual", label: "Casual" },
-	{ value: "smart_casual", label: "Smart casual" },
-	{ value: "business_casual", label: "Business casual" },
-	{ value: "semi_formal", label: "Semi-formal" },
-	{ value: "formal", label: "Formal" },
-];
-
-const SEASON_OPTIONS = [
-	{ value: "xuan", label: "Xuân" },
-	{ value: "ha", label: "Hạ" },
-	{ value: "thu", label: "Thu" },
-	{ value: "dong", label: "Đông" },
-	{ value: "spring", label: "Spring" },
-	{ value: "summer", label: "Summer" },
-	{ value: "autumn", label: "Autumn" },
-	{ value: "winter", label: "Winter" },
-	{ value: "all_season", label: "All Season" },
-];
-
-const COLOR_OPTIONS = [
-	{ value: "neutral_light", label: "Trắng / Be / Neutral sáng" },
-	{ value: "black_grey", label: "Đen / Xám đậm" },
-	{ value: "navy_blue", label: "Navy / Xanh dương" },
-	{ value: "brown_earth", label: "Nâu / Earth tone" },
-	{ value: "pastel", label: "Pastel" },
-	{ value: "bright_colors", label: "Màu nổi bật" },
-	{ value: "black", label: "Black" },
-	{ value: "white", label: "White" },
-	{ value: "neutral", label: "Neutral / Beige" },
-	{ value: "blue", label: "Blue" },
-	{ value: "earth_tone", label: "Earth Tones" },
-	{ value: "colorful", label: "Colorful / Mix" },
-];
-
-const MATERIAL_OPTIONS = [
-	{ value: "cotton", label: "Cotton" },
-	{ value: "denim", label: "Denim" },
-	{ value: "leather", label: "Leather" },
-	{ value: "wool", label: "Wool / Knit" },
-	{ value: "synthetic", label: "Synthetic" },
-];
-
-const PATTERN_OPTIONS = [
-	{ value: "solid", label: "Solid (Trơn)" },
-	{ value: "striped", label: "Striped (Kẻ)" },
-	{ value: "plaid", label: "Plaid (Caro)" },
-	{ value: "floral", label: "Floral (Hoa)" },
-	{ value: "graphic", label: "Graphic / Print" },
-];
-
-const FIT_OPTIONS = [
-	{ value: "oversized", label: "Oversized" },
-	{ value: "regular", label: "Regular / Relaxed" },
-	{ value: "slim", label: "Slim / Fitted" },
-	{ value: "baggy", label: "Baggy" },
-];
-
-const LAYER_COUNT_OPTIONS = [
-	{ value: "1", label: "1 Layer" },
-	{ value: "2", label: "2 Layers" },
-	{ value: "3", label: "3 Layers" },
-	{ value: "4+", label: "4+ Layers" },
-];
+import {
+	AESTHETIC_VIBE_OPTIONS,
+	OCCASION_OPTIONS,
+	FORMALITY_OPTIONS,
+	SEASON_OPTIONS,
+	COLOR_PALETTE_OPTIONS,
+	MATERIAL_OPTIONS,
+	PATTERN_OPTIONS,
+	FIT_OPTIONS,
+	LAYERING_OPTIONS,
+	CATEGORY_OPTIONS
+} from "@/constant/outfit-options";
 
 // Helper to map layer count to layering_depth string
 const mapLayerCountToDepth = (val: string) => {
@@ -448,7 +366,7 @@ export default function CreateOutfitPage() {
 							1. Aesthetic / Vibe
 						</label>
 						<MultiSelectCombobox
-							options={ AESTHETIC_OPTIONS }
+							options={ AESTHETIC_VIBE_OPTIONS }
 							value={ formData.aesthetic }
 							onChange={ (v) => handleMultiSelectChange("aesthetic", v) }
 							placeholder="Chọn Aesthetic / Vibe"
@@ -496,7 +414,7 @@ export default function CreateOutfitPage() {
 							5. Màu chủ đạo
 						</label>
 						<MultiSelectCombobox
-							options={ COLOR_OPTIONS }
+							options={ COLOR_PALETTE_OPTIONS }
 							value={ formData.mainColor }
 							onChange={ (v) => handleMultiSelectChange("mainColor", v) }
 							placeholder="Chọn Màu chủ đạo"
@@ -544,7 +462,7 @@ export default function CreateOutfitPage() {
 							9. Số lớp phối
 						</label>
 						<MultiSelectCombobox
-							options={ LAYER_COUNT_OPTIONS }
+							options={ LAYERING_OPTIONS }
 							value={ formData.layerCount }
 							onChange={ (v) => handleMultiSelectChange("layerCount", v) }
 							placeholder="Chọn Số lớp phối"
@@ -558,28 +476,21 @@ export default function CreateOutfitPage() {
 						10. Thành phần chính (có thể chọn nhiều)
 					</label>
 					<div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-4">
-						{ [
-							"Blazer / Suit jacket",
-							"Áo sơ mi / Polo / Tee",
-							"Quần tây / Chinos / Jeans",
-							"Outerwear (Coat, Trench, Jacket)",
-							"Giày",
-							"Phụ kiện",
-						].map((item) => (
+						{ CATEGORY_OPTIONS.map((item) => (
 							<label
-								key={ item }
+								key={ item.label }
 								className={ cn(
 									"flex cursor-pointer items-center space-x-3 rounded-md border p-3 transition-colors hover:bg-accent",
-									mainComponents.includes(item) &&
+									mainComponents.includes(item.label) &&
 									"border-[#382c25] bg-accent/50",
 								) }
 							>
 								<Checkbox
-									checked={ mainComponents.includes(item) }
-									onCheckedChange={ () => handleComponentChange(item) }
+									checked={ mainComponents.includes(item.label) }
+									onCheckedChange={ () => handleComponentChange(item.label) }
 								/>
 								<span className="text-sm text-gray-700">
-									{ item }
+									{ item.label }
 								</span>
 							</label>
 						)) }

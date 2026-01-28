@@ -7,6 +7,7 @@ export interface OutfitItem {
 	img: string;
 	url: string;
 	height: number;
+	saved_by: string[];
 }
 
 const generateRandomId = () => {
@@ -60,6 +61,7 @@ export function useRandomOutfits(count: number = 50) {
 					img: imgUrl,
 					url: `/outfit/${encodeURIComponent(doc.id)}`,
 					height: 0, // Height will be calculated by Masonry based on image aspect ratio
+					saved_by: data.saved_by || [],
 				});
 			});
 

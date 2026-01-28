@@ -10,6 +10,10 @@ import React, {
 import { useRouter } from "next/navigation";
 import { gsap } from "gsap";
 import { BookmarkIcon } from "../animated-icons/bookmark";
+import { useAuth } from "@/hooks/use-auth";
+import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
+import { db } from "@/utils/firebase";
+import { toast } from "sonner";
 
 const useMedia = (
 	queries: string[],
@@ -18,7 +22,10 @@ const useMedia = (
 ): number => {
 	const get = () => {
 		if (typeof window === "undefined") return defaultValue;
-		return values[queries.findIndex((q) => window.matchMedia(q).matches)] ?? defaultValue;
+		return (
+			values[queries.findIndex((q) => window.matchMedia(q).matches)] ??
+			defaultValue
+		);
 	};
 
 	const [value, setValue] = useState<number>(get);
@@ -54,8 +61,10 @@ const useMeasure = <T extends HTMLElement>() => {
 	return [ref, size] as const;
 };
 
-const preloadImages = async (items: Item[]): Promise<Record<string, { width: number, height: number }>> => {
-	const dimensions: Record<string, { width: number, height: number }> = {};
+const preloadImages = async (
+	items: Item[],
+): Promise<Record<string, { width: number; height: number }>> => {
+	const dimensions: Record<string, { width: number; height: number }> = {};
 	await Promise.all(
 		items.map(
 			(item) =>
@@ -63,7 +72,10 @@ const preloadImages = async (items: Item[]): Promise<Record<string, { width: num
 					const img = new Image();
 					img.src = item.img;
 					img.onload = () => {
-						dimensions[item.id] = { width: img.naturalWidth, height: img.naturalHeight };
+						dimensions[item.id] = {
+							width: img.naturalWidth,
+							height: img.naturalHeight,
+						};
 						resolve();
 					};
 					img.onerror = () => {
@@ -81,6 +93,7 @@ interface Item {
 	img: string;
 	url: string;
 	height: number;
+	saved_by?: string[];
 }
 
 interface GridItem extends Item {
@@ -113,20 +126,76 @@ const Masonry: React.FC<MasonryProps> = ({
 	blurToFocus = true,
 	colorShiftOnHover = false,
 }) => {
-    const router = useRouter();
+	const router = useRouter();
+	const { user } = useAuth();
+	const [savedStatus, setSavedStatus] = useState<Record<string, boolean>>({});
+
+	useEffect(() => {
+		if (!user) {
+			setSavedStatus({});
+			return;
+		}
+		const status: Record<string, boolean> = {};
+		items.forEach((item) => {
+			// Only set if not already set (to preserve optimistic updates during re-renders if applicable)
+			// But fundamentally we should trust the prop unless we just changed it.
+			// Currently simplified: always sync from props when they change.
+			status[item.id] = item.saved_by?.includes(user.uid) || false;
+		});
+		setSavedStatus(status);
+	}, [items, user]);
+
+	const handleBookmark = async (e: React.MouseEvent, item: Item) => {
+		e.stopPropagation();
+		if (!user) {
+			toast.error("Vui lòng đăng nhập để lưu bộ trang phục này");
+			router.push("/login");
+			return;
+		}
+
+		const isSaved = savedStatus[item.id];
+		const newStatus = !isSaved;
+
+		// Optimistic update
+		setSavedStatus((prev) => ({ ...prev, [item.id]: newStatus }));
+
+		try {
+			const outfitRef = doc(
+				db,
+				process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME ||
+					"outfits",
+				item.id,
+			);
+			if (newStatus) {
+				await updateDoc(outfitRef, {
+					saved_by: arrayUnion(user.uid),
+				});
+				toast.success("Đã lưu vào bộ sưu tập của bạn");
+			} else {
+				await updateDoc(outfitRef, {
+					saved_by: arrayRemove(user.uid),
+				});
+				toast.success("Đã xóa khỏi bộ sưu tập của bạn");
+			}
+		} catch (error) {
+			console.error("Error updating bookmark:", error);
+			toast.error("Có lỗi xảy ra, vui lòng thử lại");
+			// Revert on error
+			setSavedStatus((prev) => ({ ...prev, [item.id]: isSaved }));
+		}
+	};
+
 	const columns = useMedia(
-		[
-			"(min-width:1000px)",
-			"(min-width:600px)",
-			"(min-width:400px)",
-		],
+		["(min-width:1000px)", "(min-width:600px)", "(min-width:400px)"],
 		[4, 3, 2],
 		2,
 	);
 
 	const [containerRef, { width }] = useMeasure<HTMLDivElement>();
 	const [imagesReady, setImagesReady] = useState(false);
-	const [dimensions, setDimensions] = useState<Record<string, { width: number, height: number }>>({});
+	const [dimensions, setDimensions] = useState<
+		Record<string, { width: number; height: number }>
+	>({});
 
 	const getInitialPosition = (item: GridItem) => {
 		const containerRect = containerRef.current?.getBoundingClientRect();
@@ -176,15 +245,15 @@ const Masonry: React.FC<MasonryProps> = ({
 		return items.map((child) => {
 			const col = colHeights.indexOf(Math.min(...colHeights));
 			const x = col * (columnWidth + gap);
-			
+
 			const dim = dimensions[child.id];
 			let height = child.height;
-			
+
 			if (dim && dim.width > 0) {
 				// Calculate proportional height based on column width
 				height = (dim.height / dim.width) * columnWidth;
 			}
-			
+
 			const y = colHeights[col];
 
 			colHeights[col] += height + gap;
@@ -240,7 +309,12 @@ const Masonry: React.FC<MasonryProps> = ({
 		hasMounted.current = true;
 	}, [grid, imagesReady, stagger, animateFrom, blurToFocus, duration, ease]);
 
+	const canHover =
+		typeof window !== "undefined" &&
+		window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
 	const handleMouseEnter = (id: string, element: HTMLElement) => {
+		if (!canHover) return;
 		if (scaleOnHover) {
 			gsap.to(`[data-key="${id}"]`, {
 				scale: hoverScale,
@@ -257,6 +331,7 @@ const Masonry: React.FC<MasonryProps> = ({
 	};
 
 	const handleMouseLeave = (id: string, element: HTMLElement) => {
+		if (!canHover) return;
 		if (scaleOnHover) {
 			gsap.to(`[data-key="${id}"]`, {
 				scale: 1,
@@ -272,13 +347,17 @@ const Masonry: React.FC<MasonryProps> = ({
 		}
 	};
 
-    const containerHeight = useMemo(() => {
-        if (!grid.length) return 0;
-        return Math.max(...grid.map((item) => item.y + item.h));
-    }, [grid]);
+	const containerHeight = useMemo(() => {
+		if (!grid.length) return 0;
+		return Math.max(...grid.map((item) => item.y + item.h));
+	}, [grid]);
 
 	return (
-		<div ref={containerRef} className="relative w-full" style={{ height: containerHeight }}>
+		<div
+			ref={containerRef}
+			className="relative w-full"
+			style={{ height: containerHeight }}
+		>
 			{grid.map((item) => (
 				<div
 					key={item.id}
@@ -295,12 +374,13 @@ const Masonry: React.FC<MasonryProps> = ({
 				>
 					<div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
 						<div
-							className="bg-white/90 p-1.5 rounded-full hover:bg-white transition-colors shadow-sm"
-							onClick={(e) => {
-								e.stopPropagation();
-							}}
+							className={`p-1.5 rounded-full hover:bg-white transition-colors shadow-sm ${savedStatus[item.id] ? "bg-white" : "bg-white/90"}`}
+							onClick={(e) => handleBookmark(e, item)}
 						>
-							<BookmarkIcon size={20} className="text-black" />
+							<BookmarkIcon
+								size={20}
+								className={`${savedStatus[item.id] ? "text-black [&_svg]:fill-black" : "text-black"}`}
+							/>
 						</div>
 					</div>
 					<div
