@@ -35,6 +35,7 @@ function timeAgo(date: any) {
 export default function Header() {
 	const { isAdmin } = useAuth();
 	const [notifications, setNotifications] = useState<any[]>([]);
+	const [open, setOpen] = useState(false);
 
 	useEffect(() => {
 		if (!isAdmin) return;
@@ -68,7 +69,7 @@ export default function Header() {
 				<div className="flex items-center gap-2">
 					{isAdmin && (
 						<>
-							<Popover>
+							<Popover open={open} onOpenChange={setOpen}>
 								<PopoverTrigger asChild>
 									<Button size="icon" className="relative">
 										<Bell className="h-5 w-5" />
@@ -80,7 +81,12 @@ export default function Header() {
 								<PopoverContent className="w-80 p-0" align="end">
 									<div className="flex items-center justify-between px-4 py-3 border-b">
 										<h4 className="font-semibold text-sm">Thông báo</h4>
-										<Button variant="ghost" size="icon" className="h-6 w-6 rounded-full hover:bg-muted">
+										<Button 
+											variant="ghost" 
+											size="icon" 
+											className="h-6 w-6 rounded-full hover:bg-muted"
+											onClick={() => setOpen(false)}
+										>
 											<X className="h-4 w-4" />
 										</Button>
 									</div>
