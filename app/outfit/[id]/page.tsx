@@ -136,7 +136,7 @@ export default function OutfitDetailPage() {
 				Back to Gallery
 			</Button>
 
-			<div className="flex flex-col lg:flex-row gap-8 lg:h-[calc(100vh-200px)]">
+			<div className="flex flex-col lg:flex-row gap-8">
 				{/* Left side - Image Carousel */ }
 				<div className="w-full lg:w-3/5 bg-secondary/20 rounded-xl relative flex items-center justify-center p-4 lg:p-12">
 					<Carousel className="w-full max-w-sm lg:max-w-md">

@@ -129,8 +129,8 @@ export default function Header() {
 							</Popover>
 							<Link href="/admin/analytics">
 								<Button>
-									<BarChart2 className="mr-2 h-4 w-4" />
-									Analytics
+									<BarChart2 className="md:mr-2 h-4 w-4" />
+									<span className="hidden md:inline-block">Analytics</span>
 								</Button>
 							</Link>
 							<Link href="/admin/create-outfit">
@@ -138,8 +138,8 @@ export default function Header() {
 									variant="outline"
 									className="rounded-full border-gray-300"
 								>
-									<Plus className="mr-2 h-4 w-4" />
-									Tạo mới
+									<Plus className="md:mr-2 h-4 w-4" />
+									<span className="hidden md:inline-block">Tạo mới</span>
 								</Button>
 							</Link>
 						</>

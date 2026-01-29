@@ -13,6 +13,13 @@ import { db } from "@/utils/firebase";
 import { collection, documentId, getDocs, limit, orderBy, query, startAt, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import Loader from "@/components/custom/Loader";
+import { 
+  AESTHETIC_VIBE_OPTIONS, 
+  OCCASION_OPTIONS, 
+  FORMALITY_OPTIONS, 
+  SEASON_OPTIONS, 
+  COLOR_PALETTE_OPTIONS 
+} from "@/constant/outfit-options";
 
 interface OutfitItem {
 	id: string;
@@ -36,11 +43,11 @@ export default function SearchPage() {
 	const [ loading, setLoading ] = useState(true);
 
 	// Filter states
-	const [ aesthetic, setAesthetic ] = useState("all");
-	const [ occasion, setOccasion ] = useState("all");
-	const [ formality, setFormality ] = useState("all");
-	const [ season, setSeason ] = useState("all");
-	const [ color, setColor ] = useState("all");
+	const [ aesthetic, setAesthetic ] = useState<string>();
+	const [ occasion, setOccasion ] = useState<string>();
+	const [ formality, setFormality ] = useState<string>();
+	const [ season, setSeason ] = useState<string>();
+	const [ color, setColor ] = useState<string>();
 	const [ keyword, setKeyword ] = useState("");
 
 	const fetchOutfits = async () => {
@@ -167,31 +174,18 @@ export default function SearchPage() {
 					/>
 				</div>
 
-				<div className="flex w-full gap-2 overflow-x-auto pb-2 items-center justify-start md:justify-center no-scrollbar">
+				<div className="flex flex-wrap w-full gap-2 overflow-x-auto py-2 items-center justify-start md:justify-center no-scrollbar">
 					<Select value={ aesthetic } onValueChange={ setAesthetic }>
 						<SelectTrigger className="w-30 rounded-full">
 							<SelectValue placeholder="Aesthetic" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="all">All</SelectItem>
-							<SelectItem value="minimal">Minimal</SelectItem>
-							<SelectItem value="old_money">
-								Old money / Quiet luxury
-							</SelectItem>
-							<SelectItem value="streetwear">
-								Streetwear
-							</SelectItem>
-							<SelectItem value="smart_casual">
-								Smart casual
-							</SelectItem>
-							<SelectItem value="business_casual">
-								Business casual
-							</SelectItem>
-							<SelectItem value="vintage">Vintage</SelectItem>
-							<SelectItem value="k_fashion">K-fashion</SelectItem>
-							<SelectItem value="sporty_athleisure">
-								Sporty / Athleisure
-							</SelectItem>
+							<SelectItem value="all">Tất cả</SelectItem>
+							{AESTHETIC_VIBE_OPTIONS.map((option) => (
+								<SelectItem key={option.value} value={option.value}>
+									{option.label}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
 					<Select value={ occasion } onValueChange={ setOccasion }>
@@ -199,13 +193,12 @@ export default function SearchPage() {
 							<SelectValue placeholder="Dịp" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="all">All</SelectItem>
-							<SelectItem value="di_hoc">Đi học</SelectItem>
-							<SelectItem value="di_lam">Đi làm</SelectItem>
-							<SelectItem value="di_cafe">Đi cafe</SelectItem>
-							<SelectItem value="hen_ho">Hẹn hò</SelectItem>
-							<SelectItem value="di_bien">Đi biển</SelectItem>
-							<SelectItem value="du_tiec">Đi tiệc</SelectItem>
+							<SelectItem value="all">Tất cả</SelectItem>
+							{OCCASION_OPTIONS.map((option) => (
+								<SelectItem key={option.value} value={option.value}>
+									{option.label}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
 					<Select value={ formality } onValueChange={ setFormality }>
@@ -213,18 +206,12 @@ export default function SearchPage() {
 							<SelectValue placeholder="Trang trọng" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="all">All</SelectItem>
-							<SelectItem value="casual">Casual</SelectItem>
-							<SelectItem value="smart_casual">
-								Smart casual
-							</SelectItem>
-							<SelectItem value="business_casual">
-								Business casual
-							</SelectItem>
-							<SelectItem value="semi_formal">
-								Semi-formal
-							</SelectItem>
-							<SelectItem value="formal">Formal</SelectItem>
+							<SelectItem value="all">Tất cả</SelectItem>
+							{FORMALITY_OPTIONS.map((option) => (
+								<SelectItem key={option.value} value={option.value}>
+									{option.label}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
 					<Select value={ season } onValueChange={ setSeason }>
@@ -233,10 +220,11 @@ export default function SearchPage() {
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="all">Tất cả</SelectItem>
-							<SelectItem value="xuan">Xuân</SelectItem>
-							<SelectItem value="ha">Hạ</SelectItem>
-							<SelectItem value="thu">Thu</SelectItem>
-							<SelectItem value="dong">Đông</SelectItem>
+							{SEASON_OPTIONS.map((option) => (
+								<SelectItem key={option.value} value={option.value}>
+									{option.label}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
 					<Select value={ color } onValueChange={ setColor }>
@@ -245,22 +233,11 @@ export default function SearchPage() {
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="all">Tất cả</SelectItem>
-							<SelectItem value="neutral_light">
-								Trắng / Be / Neutral sáng
-							</SelectItem>
-							<SelectItem value="black_grey">
-								Đen / Xám đậm
-							</SelectItem>
-							<SelectItem value="navy_blue">
-								Navy / Xanh dương
-							</SelectItem>
-							<SelectItem value="brown_earth">
-								Nâu / Earth tone
-							</SelectItem>
-							<SelectItem value="pastel">Pastel</SelectItem>
-							<SelectItem value="bright_colors">
-								Màu nổi bật
-							</SelectItem>
+							{COLOR_PALETTE_OPTIONS.map((option) => (
+								<SelectItem key={option.value} value={option.value}>
+									{option.label}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
 				</div>

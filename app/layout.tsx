@@ -5,6 +5,7 @@ import Header from "@/components/custom/Header";
 import BottomNav from "@/components/custom/BottomNav";
 import { ChatBot } from "@/components/custom/ChatBot";
 import { Analytics } from "@vercel/analytics/next";
+import AnalyticsTracker from "@/components/analytics/AnalyticsTracker";
 import { Toaster } from "@/components/ui/sonner";
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -17,8 +18,34 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "ContraiCloset",
+	title: {
+		default: "ContraiCloset",
+		template: "%s | ContraiCloset",
+	},
 	description: "Find your perfect outfit combinations with ContraiCloset.",
+	metadataBase: new URL("https://www.contraicloset.com/"),
+	openGraph: {
+		title: "ContraiCloset",
+		description: "Find your perfect outfit combinations with ContraiCloset.",
+		url: "https://www.contraicloset.com/",
+		siteName: "ContraiCloset",
+		images: [
+			{
+				url: "/og-image.png", // Ensure this image exists in your public folder
+				width: 1563,
+				height: 1563,
+				alt: "ContraiCloset",
+			},
+		],
+		locale: "en_US",
+		type: "website",
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "ContraiCloset",
+		description: "Find your perfect outfit combinations with ContraiCloset.",
+		images: [ "/og-image.png" ], // Ensure this image exists in your public folder
+	},
 };
 
 export default function RootLayout({
@@ -29,6 +56,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<Analytics />
+			<AnalyticsTracker />
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>

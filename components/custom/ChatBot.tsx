@@ -1,14 +1,31 @@
 "use client"
 
 import * as React from "react"
-import { MessageSquare, X, Send } from "lucide-react"
+import { MessageSquare, X, Send, Loader2, Shirt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { getChatResponse } from "@/app/actions/chat-action"
+import Link from "next/link"
+import Image from "next/image"
+
+type OutfitData = {
+    id: string;
+    title: string;
+    images?: string[];
+    [key: string]: any;
+};
+
+type Message = {
+    id: number;
+    text: string;
+    sender: "bot" | "user";
+    outfits?: OutfitData[];
+};
 
 export function ChatBot() {
   const [isOpen, setIsOpen] = React.useState(false)
-  const [messages, setMessages] = React.useState([
+  const [messages, setMessages] = React.useState<Message[]>([
     {
       id: 1,
       text: "Xin chào! 👋 Tôi là trợ lý phối đồ của bạn. Hãy hỏi tôi về outfit bạn muốn tìm!",
@@ -16,6 +33,7 @@ export function ChatBot() {
     }
   ])
   const [inputValue, setInputValue] = React.useState("")
+  const [isLoading, setIsLoading] = React.useState(false)
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -24,7 +42,7 @@ export function ChatBot() {
 
   React.useEffect(() => {
     scrollToBottom()
-  }, [messages, isOpen])
+  }, [messages, isOpen, isLoading])
 
   const suggestions = [
     "Tôi muốn đi biển",
@@ -35,21 +53,32 @@ export function ChatBot() {
     "Set đồ tối giản"
   ]
 
-  const handleSendMessage = (text: string) => {
-    if (!text.trim()) return
+  const handleSendMessage = async (text: string) => {
+    if (!text.trim() || isLoading) return
 
     // Add user message
     setMessages(prev => [...prev, { id: Date.now(), text, sender: "user" }])
     setInputValue("")
+    setIsLoading(true)
     
-    // Simulate bot response (fake data)
-    setTimeout(() => {
+    try {
+        const result = await getChatResponse(text);
         setMessages(prev => [...prev, { 
             id: Date.now() + 1, 
-            text: "Cảm ơn bạn đã quan tâm! Đây là tính năng đang phát triển. Tôi sẽ sớm có thể gợi ý outfit cho bạn.", 
+            text: result.text, 
+            sender: "bot",
+            outfits: result.outfits
+        }])
+    } catch (error) {
+        console.error("Chat error:", error);
+         setMessages(prev => [...prev, { 
+            id: Date.now() + 1, 
+            text: "Xin lỗi, tôi gặp chút rắc rối khi tìm kiếm. Bạn thử lại sau nhé!", 
             sender: "bot" 
         }])
-    }, 1000)
+    } finally {
+        setIsLoading(false)
+    }
   }
 
   return (
@@ -85,18 +114,51 @@ export function ChatBot() {
           
           <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 bg-white scrollbar-hide">
              {messages.map((msg) => (
-                <div 
-                    key={msg.id} 
-                    className={cn(
-                        "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm",
-                        msg.sender === "bot" 
-                            ? "bg-gray-100 text-gray-800 rounded-tl-sm border border-gray-100" 
-                            : "bg-[#3E3228] text-white ml-auto rounded-tr-sm"
+                <div key={msg.id} className="space-y-2">
+                    <div 
+                        className={cn(
+                            "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm w-fit",
+                            msg.sender === "bot" 
+                                ? "bg-gray-100 text-gray-800 rounded-tl-sm border border-gray-100" 
+                                : "bg-[#3E3228] text-white ml-auto rounded-tr-sm"
+                        )}
+                    >
+                        {msg.text}
+                    </div>
+                    
+                    {/* Render Outfits if available */}
+                    {msg.outfits && msg.outfits.length > 0 && (
+                        <div className="flex flex-col gap-2 mt-1 w-full max-w-[90%]">
+                            {msg.outfits.map((outfit) => (
+                                <Link 
+                                    key={outfit.id} 
+                                    href={`/outfit/${outfit.id}`}
+                                    className="flex items-center gap-3 p-2 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all hover:border-[#3E3228]/20 group"
+                                >
+                                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gray-100 border border-gray-100">
+                                        <Image
+                                            src={outfit.images?.[0] || outfit.imageSource || "https://placehold.co/100"}
+                                            alt={outfit.title}
+                                            fill
+                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                            sizes="48px"
+                                        />
+                                    </div>
+                                    <span className="text-sm font-semibold text-gray-800 line-clamp-1">
+                                        {outfit.title}
+                                    </span>
+                                </Link>
+                            ))}
+                        </div>
                     )}
-                >
-                    {msg.text}
                 </div>
              ))}
+
+             {isLoading && (
+                 <div className="bg-gray-100 text-gray-800 rounded-2xl rounded-tl-sm border border-gray-100 px-4 py-3 w-fit">
+                     <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                 </div>
+             )}
 
              {messages.length === 1 && (
                  <div className="grid grid-cols-2 gap-2 mt-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -124,15 +186,16 @@ export function ChatBot() {
                     onKeyDown={(e) => {
                         if (e.key === "Enter") handleSendMessage(inputValue)
                     }}
+                    disabled={isLoading}
                 />
                 <Button 
                     size="icon" 
                     className={cn(
                         "h-8 w-8 rounded-full bg-[#3E3228] hover:bg-[#3E3228]/90 shrink-0 transition-opacity",
-                        inputValue.trim() ? "opacity-100" : "opacity-50"
+                        inputValue.trim() && !isLoading ? "opacity-100" : "opacity-50"
                     )}
                     onClick={() => handleSendMessage(inputValue)}
-                    disabled={!inputValue.trim()}
+                    disabled={!inputValue.trim() || isLoading}
                 >
                     <Send className="h-4 w-4" />
                 </Button>

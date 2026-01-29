@@ -229,8 +229,14 @@ const Masonry: React.FC<MasonryProps> = ({
 	};
 
 	useEffect(() => {
+		// Reset ready state when items change to prevent showing stack of unmeasured items
+		if (items.some(item => !dimensions[item.id])) {
+			setImagesReady(false);
+		}
+		
 		preloadImages(items).then((dims) => {
-			setDimensions(dims);
+			// Merge with existing dimensions to avoid reloading known images
+			setDimensions(prev => ({ ...prev, ...dims }));
 			setImagesReady(true);
 		});
 	}, [items]);
@@ -355,8 +361,11 @@ const Masonry: React.FC<MasonryProps> = ({
 	return (
 		<div
 			ref={containerRef}
-			className="relative w-full"
-			style={{ height: containerHeight }}
+			className="relative w-full transition-opacity duration-300"
+			style={{ 
+				height: containerHeight,
+				opacity: imagesReady ? 1 : 0
+			}}
 		>
 			{grid.map((item) => (
 				<div
