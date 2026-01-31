@@ -237,7 +237,7 @@ export default function OutfitDetailPage() {
                     onClick={() => router.back()}
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Gallery
+                    Quay lại
                 </Button>
 
                 <div className="lg:hidden">
@@ -308,7 +308,7 @@ export default function OutfitDetailPage() {
                                             </TooltipTrigger>
                                         </EditOutfitDialog>
                                         <TooltipContent>
-                                            <p>Edit Outfit</p>
+                                            <p>Chỉnh sửa Outfit</p>
                                         </TooltipContent>
                                     </Tooltip>
 
@@ -321,7 +321,7 @@ export default function OutfitDetailPage() {
                                             </TooltipTrigger>
                                         </DeleteOutfitDialog>
                                         <TooltipContent>
-                                            <p>Delete Outfit</p>
+                                            <p>Xóa Outfit</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -339,7 +339,7 @@ export default function OutfitDetailPage() {
                                     size={16} 
                                     className={cn(isSaved && "[&_svg]:fill-current")}
                                 />
-                                {isSaved ? "Saved" : "Save"}
+                                {isSaved ? "Đã lưu" : "Lưu"}
                             </Button>
 						    {outfit.source && <SourceLink url={outfit.source} />}
                         </div>
@@ -348,10 +348,10 @@ export default function OutfitDetailPage() {
 					<div className="flex-1">
 						<div className="flex items-center justify-between mb-6">
 							<h2 className="font-semibold text-xl">
-								Outfit Items
+								Nơi mua phối đồ
 							</h2>
 							<Badge variant="secondary" className="px-3 py-1">
-								{outfit.items?.length || 0} items
+								{outfit.items?.length || 0} sản phẩm
 							</Badge>
 						</div>
 
@@ -367,7 +367,7 @@ export default function OutfitDetailPage() {
 								)}
 							</div>
 						:	<div className="text-muted-foreground italic p-4 bg-muted/50 rounded-lg text-center">
-								No items linked to this outfit yet.
+								Chưa có sản phẩm nào được liên kết với phối đồ này.
 							</div>
 						}
 					</div>
@@ -377,7 +377,7 @@ export default function OutfitDetailPage() {
 			{/* Similar Outfits Section */}
 			{similarOutfits.length > 0 && (
 				<div className="mt-16 border-t pt-10 pb-20">
-					<h2 className="text-2xl font-bold mb-6">Similar Outfits</h2>
+					<h2 className="text-2xl font-bold mb-6">Phối đồ tương tự</h2>
 					<div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
 						{similarOutfits.map((outfit) => (
 							<SimilarOutfitCard

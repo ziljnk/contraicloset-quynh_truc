@@ -15,7 +15,7 @@ export function SourceLink({ url }: { url: string }) {
 			{...icon.events}
 		>
 			<LinkIcon ref={icon.ref} size={16} className="mr-2" />
-			View Source
+			Nguồn
 		</a>
 	);
 }

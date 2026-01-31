@@ -33,7 +33,7 @@ export default function Home() {
 					}}
 				>
 					<PlusIcon ref={plusIcon.ref} />
-					Create outfit
+					Tạo outfit
 				</Button>
 				<Button 
 					variant={"outline"}
@@ -44,7 +44,7 @@ export default function Home() {
 					}}
 				>
 					<RotateCCWIcon ref={rotateIcon.ref} />
-					Reload
+					Làm mới
 				</Button>
 			</div>
 

@@ -249,18 +249,19 @@ export default function CreateOutfitPage() {
 		<div className="container mx-auto max-w-6xl p-4 py-8 pb-32">
 			{/* Header */ }
 			<div className="mb-6">
-				<Button
-					variant="outline"
+				<div className="flex gap-4">
+					<Button
+					variant="ghost"
 					size="sm"
 					className="mb-4"
 					onClick={ () => router.back() }
 				>
-					<ArrowLeft className="mr-2 h-4 w-4" />
-					Quay lại
+					<ArrowLeft className="h-4 w-4" />
 				</Button>
 				<h1 className="text-2xl font-bold text-[#382c25]">
 					Tạo outfit
 				</h1>
+				</div>
 				<p className="text-sm text-muted-foreground">
 					Chia sẻ outfit của bạn với cộng đồng (sẽ được admin xem xét
 					và duyệt)

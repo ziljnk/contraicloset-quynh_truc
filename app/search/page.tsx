@@ -157,20 +157,20 @@ export default function SearchPage() {
 			<div className="mb-8 space-y-6 w-full flex flex-col items-center justify-start">
 				<div className="text-center space-y-2">
 					<h1 className="text-3xl font-bold tracking-tight">
-						Find and Discovery
+						Tìm kiếm & Khám phá
 					</h1>
 					<p className="text-muted-foreground text-lg">
-						Find your inspiration
+						Tìm cảm hứng phối đồ hoàn hảo của bạn
 					</p>
 				</div>
 
 				<div className="flex w-full items-center space-x-2 mb-4">
 					<Input
 						type="search"
-						placeholder="Search..."
+						placeholder="Tìm kiếm theo tiêu đề hoặc mô tả..."
 						value={ keyword }
 						onChange={ (e) => setKeyword(e.target.value) }
-						className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+						className="flex h-10 w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					/>
 				</div>
 

@@ -71,7 +71,7 @@ export default function AnalyticsDashboard() {
     return (
       <div className="flex flex-col items-center justify-center p-12 h-96">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="mt-4 text-muted-foreground">Loading analytics data...</p>
+        <p className="mt-4 text-muted-foreground">Đang tải dữ liệu...</p>
       </div>
     );
   }
@@ -91,7 +91,7 @@ export default function AnalyticsDashboard() {
              <Users className="w-6 h-6 text-blue-500" />
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Total Unique Users</p>
+            <p className="text-sm font-medium text-muted-foreground">Tổng số người dùng</p>
             <h2 className="text-3xl font-bold text-gray-900">{totalUniqueUsers}</h2>
           </div>
         </CardContent>
@@ -104,7 +104,7 @@ export default function AnalyticsDashboard() {
             {/* Top Users Card */}
             <Card className="border-none shadow-sm drop-shadow-sm bg-white">
                  <CardHeader>
-                    <CardTitle className="text-sm font-semibold">Top Users</CardTitle>
+                    <CardTitle className="text-sm font-semibold">Người dùng hàng đầu</CardTitle>
                  </CardHeader>
                  <CardContent>
                     <div className="space-y-4">
@@ -124,7 +124,7 @@ export default function AnalyticsDashboard() {
                                 </div>
                                 <div className="text-right">
                                     <span className="font-semibold text-gray-900">{user.visitCount}</span>
-                                    <span className="text-xs text-gray-500 ml-1">visits</span>
+                                    <span className="text-xs text-gray-500 ml-1">lượt truy cập</span>
                                 </div>
                             </div>
                         ))}
@@ -137,7 +137,7 @@ export default function AnalyticsDashboard() {
                                 onClick={() => setShowAllUsers(!showAllUsers)}
                                 className="text-xs text-gray-500 hover:text-gray-900"
                             >
-                                {showAllUsers ? "Show Less Users" : "Show More Users"}
+                                {showAllUsers ? "Thu gọn danh sách" : "Xem thêm"}
                                 {showAllUsers ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
                             </Button>
                         </div>
@@ -148,8 +148,8 @@ export default function AnalyticsDashboard() {
             {/* Unique Users Over Time (Green) */}
             <Card className="border-none shadow-sm drop-shadow-sm bg-white">
                 <CardHeader>
-                    <CardTitle className="text-sm font-semibold">Unique Users Over Time (Last 30 Days)</CardTitle>
-                    <p className="text-xs text-muted-foreground">Tracks the number of distinct users accessing your app each day</p>
+                    <CardTitle className="text-sm font-semibold">Người dùng theo thời gian (30 ngày qua)</CardTitle>
+                    <p className="text-xs text-muted-foreground">Theo dõi số lượng người dùng truy cập ứng dụng mỗi ngày</p>
                 </CardHeader>
                 <CardContent className="h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -165,7 +165,7 @@ export default function AnalyticsDashboard() {
                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                 cursor={{ fill: 'transparent' }}
                             />
-                            <Bar dataKey="count" fill="#4ade80" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="count" name="Người dùng" fill="#4ade80" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -174,8 +174,8 @@ export default function AnalyticsDashboard() {
             {/* Total Usage Over Time (Orange) */}
             <Card className="border-none shadow-sm drop-shadow-sm bg-white">
                 <CardHeader>
-                    <CardTitle className="text-sm font-semibold">Total Usage Over Time (Last 30 Days)</CardTitle>
-                    <p className="text-xs text-muted-foreground">Shows the total number of visits/views to your app, including repeat visits</p>
+                    <CardTitle className="text-sm font-semibold">Tổng lượt truy cập theo thời gian (30 ngày qua)</CardTitle>
+                    <p className="text-xs text-muted-foreground">Hiển thị tổng số lượt truy cập/xem ứng dụng, bao gồm cả các lượt truy cập lặp lại</p>
                 </CardHeader>
                 <CardContent className="h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -191,7 +191,7 @@ export default function AnalyticsDashboard() {
                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                 cursor={{ fill: 'transparent' }}
                             />
-                            <Bar dataKey="count" fill="#fb923c" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="count" name="Lượt truy cập" fill="#fb923c" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -203,7 +203,7 @@ export default function AnalyticsDashboard() {
              {/* Top Pages Card */}
              <Card className="border-none shadow-sm drop-shadow-sm bg-white">
                 <CardHeader>
-                    <CardTitle className="text-sm font-semibold">Top Pages</CardTitle>
+                    <CardTitle className="text-sm font-semibold">Các trang phổ biến</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-6">
@@ -211,7 +211,7 @@ export default function AnalyticsDashboard() {
                             <div key={i} className="space-y-2">
                                 <div className="flex justify-between text-xs font-medium">
                                     <span className="truncate max-w-[70%]">{page.pageName}</span>
-                                    <span>{page.viewCount} views</span>
+                                    <span>{page.viewCount} lượt xem</span>
                                 </div>
                                 <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                                     <div 

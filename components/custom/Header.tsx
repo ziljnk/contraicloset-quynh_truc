@@ -178,7 +178,7 @@ export default function Header() {
 								<Button>
 									<BarChart2 className="md:mr-2 h-4 w-4" />
 									<span className="hidden md:inline-block">
-										Analytics
+										Thống kê
 									</span>
 								</Button>
 							</Link>
