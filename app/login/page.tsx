@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -10,6 +10,7 @@ import {
 	FacebookAuthProvider,
 } from "firebase/auth";
 import { auth } from "@/utils/firebase";
+import { useAuth } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Loader2, Shirt } from "lucide-react";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 
 export default function LoginPage() {
 	const router = useRouter();
+	const { user, loading } = useAuth();
 	const [isLoading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -25,6 +27,12 @@ export default function LoginPage() {
 		email: "",
 		password: "",
 	});
+
+	useEffect(() => {
+		if (!loading && user) {
+			router.push("/");
+		}
+	}, [user, loading, router]);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });

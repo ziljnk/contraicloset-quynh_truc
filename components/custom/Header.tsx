@@ -52,7 +52,7 @@ function timeAgo(date: any) {
 }
 
 export default function Header() {
-	const { isAdmin } = useAuth();
+	const { isAdmin, user } = useAuth();
 	const [notifications, setNotifications] = useState<any[]>([]);
 	const [open, setOpen] = useState(false);
 	const router = useRouter();
@@ -192,33 +192,35 @@ export default function Header() {
 							</Link>
 						</>
 					)}
-					<AlertDialog>
-						<AlertDialogTrigger asChild>
-							<Button className="rounded-full">
-								<LogOut className="h-4 w-4" />
-								<span className="hidden md:inline-block">
-									Đăng xuất
-								</span>
-							</Button>
-						</AlertDialogTrigger>
-						<AlertDialogContent>
-							<AlertDialogHeader>
-								<AlertDialogTitle>
-									Bạn có chắc chắn muốn đăng xuất?
-								</AlertDialogTitle>
-								<AlertDialogDescription>
-									Bạn sẽ cần phải đăng nhập lại để truy cập
-									vào tài khoản của mình.
-								</AlertDialogDescription>
-							</AlertDialogHeader>
-							<AlertDialogFooter>
-								<AlertDialogCancel>Hủy</AlertDialogCancel>
-								<AlertDialogAction onClick={handleLogout}>
-									Đăng xuất
-								</AlertDialogAction>
-							</AlertDialogFooter>
-						</AlertDialogContent>
-					</AlertDialog>
+					{user && (
+						<AlertDialog>
+							<AlertDialogTrigger asChild>
+								<Button className="rounded-full">
+									<LogOut className="h-4 w-4" />
+									<span className="hidden md:inline-block">
+										Đăng xuất
+									</span>
+								</Button>
+							</AlertDialogTrigger>
+							<AlertDialogContent>
+								<AlertDialogHeader>
+									<AlertDialogTitle>
+										Bạn có chắc chắn muốn đăng xuất?
+									</AlertDialogTitle>
+									<AlertDialogDescription>
+										Bạn sẽ cần phải đăng nhập lại để truy cập
+										vào tài khoản của mình.
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+								<AlertDialogFooter>
+									<AlertDialogCancel>Hủy</AlertDialogCancel>
+									<AlertDialogAction onClick={handleLogout}>
+										Đăng xuất
+									</AlertDialogAction>
+								</AlertDialogFooter>
+							</AlertDialogContent>
+						</AlertDialog>
+					)}
 				</div>
 			</div>
 		</header>
