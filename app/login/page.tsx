@@ -132,7 +132,8 @@ export default function LoginPage() {
 						variant="outline"
 						className="w-full justify-center gap-2 h-10 font-normal text-gray-900 border-gray-200"
 						onClick={handleFacebookSignUp}
-						disabled={isLoading}
+						// disabled={isLoading}
+						disabled={true}
 					>
 						<svg
 							className="h-4 w-4 text-[#1877F2]"
