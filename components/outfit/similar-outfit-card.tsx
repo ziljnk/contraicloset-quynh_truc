@@ -1,10 +1,76 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { BookmarkIcon, type BookmarkIconHandle } from "@/components/animated-icons/bookmark";
 import { useIconAnimation } from "@/hooks/use-icon-animation";
+import { useAuth } from "@/hooks/use-auth";
+import { doc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { db } from "@/utils/firebase";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export function SimilarOutfitCard({ outfit }: { outfit: any }) {
+	const { user } = useAuth();
 	const icon = useIconAnimation<BookmarkIconHandle>();
+	const [isSaved, setIsSaved] = useState(false);
+	const [isSaving, setIsSaving] = useState(false);
+
+	useEffect(() => {
+		if (user && outfit?.saved_by) {
+			setIsSaved(outfit.saved_by.includes(user.uid));
+		}
+	}, [user, outfit]);
+
+	const handleToggleSave = async (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+
+		if (!user) {
+			toast.error("Please login to bookmark outfits");
+			return;
+		}
+
+		if (isSaving) return;
+
+		setIsSaving(true);
+		
+		// Optimistic update
+		const newSavedState = !isSaved;
+		setIsSaved(newSavedState);
+
+		// Trigger animation based on state
+		if (newSavedState) {
+			icon.events.onMouseEnter();
+		} else {
+			icon.events.onMouseLeave();
+		}
+
+		try {
+			const collectionName = process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME || "outfits";
+			const outfitRef = doc(db, collectionName, outfit.id);
+
+			if (newSavedState) {
+				await updateDoc(outfitRef, {
+					saved_by: arrayUnion(user.uid)
+				});
+				toast.success("Saved to bookmarks");
+			} else {
+				await updateDoc(outfitRef, {
+					saved_by: arrayRemove(user.uid)
+				});
+				toast.success("Removed from bookmarks");
+			}
+		} catch (error) {
+			console.error("Error toggling save:", error);
+			// Revert on error
+			setIsSaved(!newSavedState);
+			toast.error("Failed to update bookmark");
+		} finally {
+			setIsSaving(false);
+		}
+	};
 
 	return (
 		<div className="group relative aspect-3/4 overflow-hidden rounded-xl bg-gray-100">
@@ -29,15 +95,21 @@ export function SimilarOutfitCard({ outfit }: { outfit: any }) {
 			</Link>
 			<button
 				type="button"
-				className="absolute top-2 right-2 z-10 p-2 rounded-full bg-black/20 text-white hover:bg-black/40 backdrop-blur-sm transition-all duration-300 opacity-0 group-hover:opacity-100"
-				onClick={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					icon.events.onMouseEnter(); // Trigger animation on click as well? Or just leave it.
-				}}
-				{...icon.events}
+				className={cn(
+					"absolute top-2 right-2 z-10 p-2 rounded-full backdrop-blur-sm transition-all duration-300",
+					isSaved 
+						? "bg-black/40 text-white opacity-100" 
+						: "bg-black/20 text-white hover:bg-black/40 opacity-0 group-hover:opacity-100"
+				)}
+				onClick={handleToggleSave}
+				onMouseEnter={() => !isSaved && icon.events.onMouseEnter()}
+				onMouseLeave={() => !isSaved && icon.events.onMouseLeave()}
 			>
-				<BookmarkIcon ref={icon.ref} size={20} />
+				<BookmarkIcon 
+					ref={icon.ref} 
+					size={20} 
+					className={cn(isSaved && "[&_svg]:fill-current")}
+				/>
 			</button>
 		</div>
 	);
