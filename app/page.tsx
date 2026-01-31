@@ -67,7 +67,7 @@ export default function Home() {
 					/>
 					
 					{items.length > 0 && (
-						<div className="flex flex-col items-center justify-center pt-20 pb-10">
+						<div className="flex flex-col items-center justify-center pt-20 pb-20">
 							<div className="mb-4">
 								<Sparkles className="h-8 w-8 text-gray-300 fill-current" />
 							</div>

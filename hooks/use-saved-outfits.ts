@@ -26,7 +26,7 @@ export function useSavedOutfits() {
 				where("saved_by", "array-contains", user.uid)
 			);
 
-			const unsubscribe = onSnapshot(q, (snapshot) => {
+			const unsubscribe = onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
 				const fetchedItems: OutfitItem[] = [];
 				snapshot.forEach((doc) => {
 					const data = doc.data();
@@ -43,7 +43,12 @@ export function useSavedOutfits() {
 					});
 				});
 				setItems(fetchedItems);
-				setLoading(false);
+				
+				// Prevent flash of empty content:
+				// Only finish loading if we have data OR if the empty result is confirmed by server (not just empty cache)
+				if (!snapshot.empty || !snapshot.metadata.fromCache) {
+					setLoading(false);
+				}
 			}, (error) => {
 				console.error("Error fetching saved outfits:", error);
 				setLoading(false);
