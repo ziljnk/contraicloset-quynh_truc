@@ -70,11 +70,12 @@ const preloadImages = async (
       (item) =>
         new Promise<void>((resolve) => {
           const img = new Image();
-          img.src = item.img;
           img.onload = () => {
+             // Ensure we don't return 0 dimensions if something weird happens with naturalWidth/Height
+             // but successful load event
             dimensions[item.id] = {
-              width: img.naturalWidth,
-              height: img.naturalHeight,
+              width: img.naturalWidth || 1,
+              height: img.naturalHeight || 1,
             };
             resolve();
           };
@@ -82,6 +83,8 @@ const preloadImages = async (
             dimensions[item.id] = { width: 1, height: 1 };
             resolve();
           };
+          // Set src AFTER handlers to catch cached images correctly in all environments
+          img.src = item.img;
         }),
     ),
   );
@@ -377,6 +380,9 @@ const Masonry: React.FC<MasonryProps> = ({
 
       if (dim && dim.width > 0) {
         height = (dim.height / dim.width) * columnWidth;
+      } else if (height === 0) {
+        // Fallback to a default aspect ratio (e.g., 3:4) if dimensions aren't ready and height is 0
+        height = columnWidth * (4 / 3);
       }
 
       const y = colHeights[col];

@@ -72,7 +72,7 @@ export default function BookmarkPage() {
 					<Loader2 className="h-8 w-8 animate-spin text-gray-500" />
 				</div>
 			: items.length > 0 ?
-				<div className="px-2 md:px-8">
+				<div className="container mx-auto px-4 py-8 md:px-12">
 					<Masonry
 						items={items}
 						ease="power3.out"
