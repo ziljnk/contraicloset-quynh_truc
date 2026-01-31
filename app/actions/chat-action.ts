@@ -12,7 +12,7 @@ import {
 } from "@/utils/chat-dictionaries";
 
 const GEN_AI_API_KEY = process.env.GOOGLE_API_KEY || "";
-const GEMINI_MODEL_NAME = process.env.GOOGLE_GEMINI_MODEL || "gemini-1.5-flash"; // Default fallback
+const GEMINI_MODEL_NAME = process.env.GOOGLE_GEMINI_MODEL || "gemini-2.5-flash"; // Default fallback
 
 interface OutfitData {
 	id: string;

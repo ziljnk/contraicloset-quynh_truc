@@ -97,7 +97,7 @@ export function ChatBot() {
         "fixed bottom-20 right-4 z-50 w-[350px] md:bottom-8 md:right-8 transition-all duration-300 ease-in-out origin-bottom-right",
         isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 pointer-events-none"
       )}>
-        <Card className="border-none shadow-2xl overflow-hidden flex flex-col h-[500px] w-full bg-white rounded-2xl">
+        <Card className="border-none pt-0 shadow-2xl overflow-hidden flex flex-col h-[500px] w-full bg-white rounded-2xl">
           <CardHeader className="bg-[#3E3228] text-white p-4 flex flex-row items-center justify-between space-y-0 shrink-0">
             <CardTitle className="text-base font-bold flex items-center gap-2">
               Trợ lý phối đồ

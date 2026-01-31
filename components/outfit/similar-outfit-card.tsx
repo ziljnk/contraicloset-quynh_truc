@@ -9,7 +9,7 @@ export function SimilarOutfitCard({ outfit }: { outfit: any }) {
 	return (
 		<div className="group relative aspect-3/4 overflow-hidden rounded-xl bg-gray-100">
 			<Link
-				href={`/outfit/${outfit.id}`}
+				href={`/outfit/${encodeURIComponent(outfit.id)}`}
 				className="block w-full h-full"
 			>
 				<Image

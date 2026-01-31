@@ -24,6 +24,17 @@ import { MultiSelectCombobox } from "@/components/custom/multi-select-combobox";
 import { Checkbox } from "@/components/animate-ui/components/radix/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+  } from "@/components/ui/alert-dialog";
 
 import {
 	AESTHETIC_VIBE_OPTIONS,
@@ -353,8 +364,6 @@ export default function PendingOutfitPage({
 	};
 
 	const handleReject = async () => {
-		if (!confirm("Bạn có chắc chắn muốn từ chối outfit này?")) return;
-
 		setIsSubmitting(true);
 		try {
 			// 1. Update pending_outfits status
@@ -652,7 +661,6 @@ export default function PendingOutfitPage({
 						<Button
 							type="button"
 							size="icon"
-							className="shrink-0 rounded-full bg-stone-800 hover:bg-stone-700"
 							onClick={handleAddLink}
 						>
 							<Plus className="h-4 w-4" />
@@ -720,16 +728,34 @@ export default function PendingOutfitPage({
 
 			{/* Actions - Fixed Bottom */}
 			<div className="container mx-auto max-w-5xl flex justify-end gap-4">
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button
+                            variant="outline"
+                            className="rounded-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                            disabled={isSubmitting}
+                        >
+                            Từ chối
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Từ chối outfit này?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Hành động này sẽ đánh dấu outfit là "rejected" và xóa báo cáo liên quan. Bạn không thể hoàn tác hành động này.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Hủy</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleReject} className="bg-red-600 hover:bg-red-700">
+                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Xác nhận từ chối
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
 				<Button
-					variant="outline"
-					className="rounded-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 h-11 px-8"
-					onClick={handleReject}
-					disabled={isSubmitting}
-				>
-					Từ chối
-				</Button>
-				<Button
-					className="rounded-full bg-stone-800 hover:bg-stone-900 h-11 px-8"
 					onClick={handleApprove}
 					disabled={isSubmitting}
 				>

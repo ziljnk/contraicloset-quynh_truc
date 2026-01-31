@@ -20,7 +20,7 @@ export default function Home() {
 
 	return (
 		<div className="container mx-auto py-8 px-4 md:px-12">
-			<div className="flex justify-end items-center gap-5 mb-10">
+			<div className="flex justify-end items-center gap-2 mb-10">
 				<Button 
 					variant={"outline"}
 					{...plusIcon.events}
@@ -42,7 +42,6 @@ export default function Home() {
 						fetchOutfits();
 						rotateIcon.ref.current?.startAnimation();
 					}}
-					className="rounded-lg"
 				>
 					<RotateCCWIcon ref={rotateIcon.ref} />
 					Reload
