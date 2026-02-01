@@ -25,6 +25,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Tooltip,
 	TooltipContent,
@@ -62,6 +63,7 @@ export default function OutfitDetailPage() {
 	const [outfit, setOutfit] = React.useState<any>(null);
 	const [similarOutfits, setSimilarOutfits] = React.useState<any[]>([]);
 	const [loading, setLoading] = React.useState(true);
+	const [loadingSimilar, setLoadingSimilar] = React.useState(true);
     const [isSaved, setIsSaved] = React.useState(false);
     const [isSaving, setIsSaving] = React.useState(false);
     const bookmarkIcon = useIconAnimation<BookmarkIconHandle>();
@@ -144,6 +146,7 @@ export default function OutfitDetailPage() {
 							})) || [],
 					};
 					setOutfit(currentOutfitData);
+					setLoading(false);
 
 					// Fetch candidates for similarity check
 					const outfitsRef = collection(
@@ -190,11 +193,13 @@ export default function OutfitDetailPage() {
 					setSimilarOutfits(scoredCandidates.slice(0, 6));
 				} else {
 					console.log("No such document!");
+					setLoading(false);
 				}
 			} catch (error) {
 				console.error("Error fetching outfit:", error);
-			} finally {
 				setLoading(false);
+			} finally {
+				setLoadingSimilar(false);
 			}
 		}
 
@@ -266,14 +271,15 @@ export default function OutfitDetailPage() {
 							{outfit.images.map(
 								(image: string, index: number) => (
 									<CarouselItem key={index}>
-										<div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg shadow-xl">
+										<div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg shadow-xl bg-secondary/10">
+											<Skeleton className="absolute inset-0 w-full h-full" />
 											<Image
 												src={image}
 												alt={`${outfit.title} - Image ${index + 1}`}
 												fill
 												sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-												className="object-cover"
-												priority
+												className="object-cover relative z-10"
+												priority={index === 0}
 											/>
 										</div>
 									</CarouselItem>
@@ -375,17 +381,31 @@ export default function OutfitDetailPage() {
 			</div>
 
 			{/* Similar Outfits Section */}
-			{similarOutfits.length > 0 && (
+			{(similarOutfits.length > 0 || loadingSimilar) && (
 				<div className="mt-16 border-t pt-10 pb-20">
 					<h2 className="text-2xl font-bold mb-6">Phối đồ tương tự</h2>
-					<div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-						{similarOutfits.map((outfit) => (
-							<SimilarOutfitCard
-								key={outfit.id}
-								outfit={outfit}
-							/>
-						))}
-					</div>
+					{loadingSimilar ? (
+						<div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+							{[...Array(3)].map((_, i) => (
+								<div key={i} className="flex flex-col space-y-3">
+									<Skeleton className="aspect-[3/4] w-full rounded-xl" />
+									<div className="space-y-2">
+										<Skeleton className="h-4 w-[250px]" />
+										<Skeleton className="h-4 w-[200px]" />
+									</div>
+								</div>
+							))}
+						</div>
+					) : (
+						<div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+							{similarOutfits.map((outfit) => (
+								<SimilarOutfitCard
+									key={outfit.id}
+									outfit={outfit}
+								/>
+							))}
+						</div>
+					)}
 				</div>
 			)}
 		</div>
