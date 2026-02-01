@@ -35,7 +35,7 @@ const NavItem = ({ href, icon: Icon, label }: NavItemProps) => {
 			)}
 		>
 			<Icon ref={ref} />
-			<span className="text-[10px] font-medium">{label}</span>
+			<span className="text-[10px] text-center font-medium">{label}</span>
 		</Link>
 	);
 };
@@ -43,10 +43,10 @@ const NavItem = ({ href, icon: Icon, label }: NavItemProps) => {
 export default function BottomNav() {
 	return (
 		<div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-md">
-			<nav className="flex h-20 items-center justify-center gap-15 md:gap-30 px-4 pb-2">
-				<NavItem href="/" icon={HomeIcon} label="Trang chủ" />
-				<NavItem href="/search" icon={SearchIcon} label="Tìm kiếm" />
-				<NavItem href="/bookmark" icon={BookmarkIcon} label="Đã lưu" />
+			<nav className="flex h-20 items-center justify-center gap-15 md:gap-30 px-4 pb-2 pt-2">
+				<NavItem href="/" icon={HomeIcon} label="Home" />
+				<NavItem href="/search" icon={SearchIcon} label="Search" />
+				<NavItem href="/bookmark" icon={BookmarkIcon} label="Bookmarks" />
 			</nav>
 		</div>
 	);

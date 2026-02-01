@@ -154,44 +154,53 @@ export default function CreateOutfitPage() {
 			const uploadData = new FormData();
 			imageFiles.forEach(file => uploadData.append("files", file));
 
-			const response = await fetch("/api/upload", {
-				method: "POST",
-				body: uploadData,
-			});
+			let imageUrls: string[] = [];
+			
+			try {
+				const response = await fetch("/api/upload", {
+					method: "POST",
+					body: uploadData,
+				});
 
-			if (!response.ok) {
-				const errorData = await response.json();
-				throw new Error(errorData.error || "Lỗi khi tải ảnh lên");
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(errorData.error || "Lỗi khi tải ảnh lên");
+				}
+
+				const data = await response.json();
+				imageUrls = data.urls;
+			} catch (err: any) {
+				console.error("Upload Error:", err);
+				throw new Error("Lỗi upload ảnh: " + (err.message || "Unknown error"));
 			}
-
-			const { urls: imageUrls } = await response.json();
 
 			// Filter out empty product links
 			const validProductLinks = productLinks.filter(
 				(l) => l.name.trim() !== "" || l.link.trim() !== "",
-			);
+			).map(l => ({ name: l.name || "", link: l.link || "" }));
 
             // 2. Prepare Data for pending_outfits (User Logic)
+			// Ensure no undefined values are passed to Firestore
 			const outfitData = {
-			    userId: user?.uid,
-			    userEmail: user?.email,
-			    createdByName: user?.displayName || user?.email, 
+			    userId: user?.uid || "",
+			    userEmail: user?.email || "",
+			    createdByName: user?.displayName || user?.email || "Anonymous", 
 			    
-				formality: formData.formality, // Using array as per original user page
-				pattern: formData.pattern,
-				layering: formData.layerCount, 
+				formality: formData.formality || [], 
+				pattern: formData.pattern || [],
+				layering: formData.layerCount || [], 
 				productLinks: validProductLinks,
-				imageSource: formData.imageSource,
-				occasion: formData.occasion,
-				material: formData.material,
-				fit: formData.fit,
-				aesthetic: formData.aesthetic,
-				colors: formData.mainColor, 
-				season: formData.season,
-				categories: mainComponents,
+				imageSource: formData.imageSource || "",
+				occasion: formData.occasion || [],
+				material: formData.material || [],
+				fit: formData.fit || [],
+				aesthetic: formData.aesthetic || [],
+				colors: formData.mainColor || [], 
+				season: formData.season || [],
+				categories: mainComponents || [],
 				
-				title: formData.title,
-				description: formData.description,
+				title: formData.title || "",
+				description: formData.description || "",
 				
 				images: imageUrls,
 				imageUrl: imageUrls[0] || "",
@@ -207,13 +216,13 @@ export default function CreateOutfitPage() {
             // 4. Add Notification to reports collection
             const reportData = {
                 createdAt: serverTimestamp(),
-                details: `Outfit mới đang chờ duyệt từ ${user?.email}`,
+                details: `Outfit mới đang chờ duyệt từ ${user?.email || "Unknown"}`,
                 isRead: false,
                 outfitId: pendingOutfitId,
-                outfitTitle: formData.title,
+                outfitTitle: formData.title || "",
                 reasons: ["pending_outfit"],
                 type: "pending_outfit",
-                userEmail: user?.email
+                userEmail: user?.email || ""
             };
             
             await addDoc(collection(db, "reports"), reportData);

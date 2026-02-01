@@ -7,6 +7,7 @@ import { ChatBot } from "@/components/custom/ChatBot";
 import { Analytics } from "@vercel/analytics/next";
 import AnalyticsTracker from "@/components/analytics/AnalyticsTracker";
 import { Toaster } from "@/components/ui/sonner";
+import { OutfitsProvider } from "@/context/outfits-context";
 const geistSans = Geist({
 	variable: "--font-geist-sans",
 	subsets: ["latin"],
@@ -19,22 +20,22 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
 	title: {
-		default: "ContraiCloset",
-		template: "%s | ContraiCloset",
+		default: "Contraicloset",
+		template: "%s | Contraicloset",
 	},
-	description: "Find your perfect outfit combinations with ContraiCloset.",
+	description: "Find your perfect outfit combinations with Contraicloset.",
 	metadataBase: new URL("https://www.contraicloset.com/"),
 	openGraph: {
-		title: "ContraiCloset",
-		description: "Find your perfect outfit combinations with ContraiCloset.",
+		title: "Contraicloset",
+		description: "Find your perfect outfit combinations with Contraicloset.",
 		url: "https://www.contraicloset.com/",
-		siteName: "ContraiCloset",
+		siteName: "Contraicloset",
 		images: [
 			{
 				url: "/og-image.png", // Ensure this image exists in your public folder
 				width: 1563,
 				height: 1563,
-				alt: "ContraiCloset",
+				alt: "Contraicloset",
 			},
 		],
 		locale: "en_US",
@@ -42,8 +43,8 @@ export const metadata: Metadata = {
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "ContraiCloset",
-		description: "Find your perfect outfit combinations with ContraiCloset.",
+		title: "Contraicloset",
+		description: "Find your perfect outfit combinations with Contraicloset.",
 		images: [ "/og-image.png" ], // Ensure this image exists in your public folder
 	},
 };
@@ -60,11 +61,13 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
-				<Header />
-				<main className="pt-16 pb-16 md:pb-0">{children}</main>
-				<BottomNav />
-				<ChatBot />
-				<Toaster />
+				<OutfitsProvider>
+					<Header />
+					<main className="pt-16 pb-16 md:pb-0">{children}</main>
+					<BottomNav />
+					<ChatBot />
+					<Toaster />
+				</OutfitsProvider>
 			</body>
 		</html>
 	);
