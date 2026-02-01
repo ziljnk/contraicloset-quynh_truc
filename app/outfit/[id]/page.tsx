@@ -44,6 +44,7 @@ import { BookmarkIcon, type BookmarkIconHandle } from "@/components/animated-ico
 import { useIconAnimation } from "@/hooks/use-icon-animation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { trackUserPreference } from "@/utils/recommendation";
 
 export default function OutfitDetailPage() {
 	const params = useParams();
@@ -67,6 +68,13 @@ export default function OutfitDetailPage() {
     const [isSaved, setIsSaved] = React.useState(false);
     const [isSaving, setIsSaving] = React.useState(false);
     const bookmarkIcon = useIconAnimation<BookmarkIconHandle>();
+
+    // Track view when outfit is loaded
+    React.useEffect(() => {
+        if (outfit && user) {
+            trackUserPreference(user.uid, outfit, 'view');
+        }
+    }, [outfit?.id, user?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
     
     const handleToggleSave = async () => {
         if (!user) {
@@ -96,6 +104,7 @@ export default function OutfitDetailPage() {
                 await updateDoc(outfitRef, {
                     saved_by: arrayUnion(user.uid)
                 });
+                trackUserPreference(user.uid, outfit, 'save');
                 toast.success("Saved to bookmarks");
             }
         } catch (error) {
