@@ -570,7 +570,7 @@ export default function CreateOutfitPage() {
 							<div className="space-y-2">
 								{ index === 0 && (
 									<label className="text-sm font-medium text-muted-foreground">
-										Liên kết tiếp thị
+										Link sản phẩm
 									</label>
 								) }
 								<Input

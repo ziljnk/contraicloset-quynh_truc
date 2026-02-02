@@ -647,7 +647,7 @@ export default function PendingOutfitPage({
 						/>
 					</div>
 					<div className="flex-1 space-y-2">
-						<Label>Liên kết tiếp thị</Label>
+						<Label>Link sản phẩm</Label>
 						<Input
 							value={newLink.link}
 							onChange={(e) =>
