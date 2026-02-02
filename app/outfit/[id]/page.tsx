@@ -246,11 +246,11 @@ export default function OutfitDetailPage() {
 		<div className="container mx-auto px-4 py-8">
 			<div className="flex justify-between items-center mb-6">
                 <Button
-                    variant="ghost"
+                    variant="outline"
                     className="pl-0 hover:pl-2 transition-all"
                     onClick={() => router.back()}
                 >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    <ArrowLeft className="h-4 w-4" />
                     Quay lại
                 </Button>
 

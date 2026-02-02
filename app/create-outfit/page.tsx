@@ -278,11 +278,10 @@ export default function CreateOutfitPage() {
 			<div className="mb-6">
 				<Button
 					variant="outline"
-					size="sm"
-					className="mb-4"
+                    className="pl-0 hover:pl-2 transition-all mb-4"
 					onClick={ () => router.back() }
 				>
-					<ArrowLeft className="mr-2 h-4 w-4" />
+					<ArrowLeft className="h-4 w-4" />
 					Quay lại
 				</Button>
 				<h1 className="text-2xl font-bold text-[#382c25]">
