@@ -152,7 +152,13 @@ export default function CreateOutfitPage() {
 		try {
 			// 1. Upload Images using API Route
 			const uploadData = new FormData();
-			imageFiles.forEach(file => uploadData.append("files", file));
+			// Sanitize filenames to prevent "string did not match expected pattern" error
+			// which can happen when filenames contain special characters/unicode
+			imageFiles.forEach((file, index) => {
+				const extension = file.name.split('.').pop() || "jpg";
+				const safeName = `image_${Date.now()}_${index}.${extension}`;
+				uploadData.append("files", file, safeName);
+			});
 
 			let imageUrls: string[] = [];
 			
