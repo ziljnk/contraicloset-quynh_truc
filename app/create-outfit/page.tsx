@@ -38,7 +38,7 @@ import {
 
 export default function CreateOutfitPage() {
 	const router = useRouter();
-	const { user, loading } = useAuth();
+	const { user, loading, isAdmin } = useAuth();
 	const [ isSubmitting, setIsSubmitting ] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const uploadIcon = useIconAnimation<UploadIconHandle>();
@@ -393,10 +393,11 @@ export default function CreateOutfitPage() {
 			</div>
 
 			{/* Attributes */ }
-			<div className="mb-8 rounded-lg border bg-card p-6 shadow-sm">
-				<h2 className="mb-4 text-lg font-semibold text-[#382c25]">
-					Thuộc tính set đồ
-				</h2>
+			{ isAdmin && (
+				<div className="mb-8 rounded-lg border bg-card p-6 shadow-sm">
+					<h2 className="mb-4 text-lg font-semibold text-[#382c25]">
+						Thuộc tính set đồ
+					</h2>
 				<div className="grid gap-x-6 gap-y-6 md:grid-cols-2">
 					{/* 1. Aesthetic */ }
 					<div className="space-y-2">
@@ -535,6 +536,7 @@ export default function CreateOutfitPage() {
 					</div>
 				</div>
 			</div>
+			) }
 
 			{/* Product Links */ }
 			<div className="mb-20 rounded-lg border bg-white p-6 shadow-sm">
