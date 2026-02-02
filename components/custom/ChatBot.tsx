@@ -132,7 +132,7 @@ export function ChatBot() {
                             {msg.outfits.map((outfit) => (
                                 <Link 
                                     key={outfit.id} 
-                                    href={`/outfit/${outfit.id}`}
+                                    href={`/outfit/${encodeURIComponent(outfit.id)}`}
                                     className="flex items-center gap-3 p-2 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all hover:border-[#3E3228]/20 group"
                                 >
                                     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gray-100 border border-gray-100">
