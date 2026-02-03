@@ -46,7 +46,7 @@ export default function BottomNav() {
 			<nav className="flex h-20 items-center justify-center gap-15 md:gap-30 px-4 pb-2 pt-2">
 				<NavItem href="/" icon={HomeIcon} label="Home" />
 				<NavItem href="/search" icon={SearchIcon} label="Search" />
-				<NavItem href="/bookmark" icon={BookmarkIcon} label="Bookmarks" />
+				<NavItem href="/bookmark" icon={BookmarkIcon} label="Saved" />
 			</nav>
 		</div>
 	);

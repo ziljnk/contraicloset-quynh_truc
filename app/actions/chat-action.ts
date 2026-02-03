@@ -216,7 +216,7 @@ export async function getChatResponse(message: string): Promise<ChatResponse> {
         4. Trả về câu trả lời dưới dạng JSON object với cấu trúc:
         {
             "selected_ids": ["id_1", "id_2"],
-            "message": "Lời khuyên của bạn ở đây... (có chứa \n), trả lời dưới dạng markdown, không được chứa HTML."
+            "message": "Lời khuyên của bạn ở đây... (có chứa \n), trả lời dưới dạng markdown, không được chứa HTML. Trả lời tất cả bằng tiếng việt, dịch các keyword nếu cần."
         }
         CHỈ TRẢ VỀ JSON, KHÔNG CÓ TEXT KHÁC.
         `;
