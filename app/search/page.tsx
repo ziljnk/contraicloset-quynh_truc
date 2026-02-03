@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { db } from "@/utils/firebase";
 import { collection, documentId, getDocs, limit, orderBy, query, startAt, where } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import Loader from "@/components/custom/Loader";
 import { 
   AESTHETIC_VIBE_OPTIONS, 
@@ -20,14 +20,8 @@ import {
   SEASON_OPTIONS, 
   COLOR_PALETTE_OPTIONS 
 } from "@/constant/outfit-options";
-
-interface OutfitItem {
-	id: string;
-	img: string;
-	url: string;
-	height: number;
-	saved_by: string[];
-}
+import { useOutfitsContext, type OutfitItem } from "@/context/outfits-context";
+import { useRouter } from "next/navigation";
 
 const generateRandomId = () => {
 	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -39,18 +33,27 @@ const generateRandomId = () => {
 }
 
 export default function SearchPage() {
-	const [ items, setItems ] = useState<OutfitItem[]>([]);
-	const [ loading, setLoading ] = useState(true);
+	const router = useRouter();
+	const {
+		searchItems: items,
+		setSearchItems: setItems,
+		searchLoading: loading,
+		setSearchLoading: setLoading,
+		searchFilters,
+		setSearchFilters,
+		searchScrollPosition,
+		setSearchScrollPosition,
+		executedFilterKey,
+		setExecutedFilterKey
+	} = useOutfitsContext();
 
-	// Filter states
-	const [ aesthetic, setAesthetic ] = useState<string>();
-	const [ occasion, setOccasion ] = useState<string>();
-	const [ formality, setFormality ] = useState<string>();
-	const [ season, setSeason ] = useState<string>();
-	const [ color, setColor ] = useState<string>();
-	const [ keyword, setKeyword ] = useState("");
+	const { aesthetic, occasion, formality, season, color, keyword } = searchFilters;
 
-	const fetchOutfits = async () => {
+	const handleFilterChange = (key: keyof typeof searchFilters, value: string) => {
+		setSearchFilters(prev => ({ ...prev, [key]: value }));
+	};
+
+	const fetchOutfits = useCallback(async () => {
 		setLoading(true);
 		setItems([]);
 
@@ -146,14 +149,22 @@ export default function SearchPage() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [aesthetic, occasion, formality, season, color, keyword, setItems, setLoading]);
 
 	useEffect(() => {
-		fetchOutfits();
-	}, [ aesthetic, occasion, formality, season, color, keyword ]);
+		const currentFilterKey = JSON.stringify(searchFilters);
+		// Only fetch if filters have changed relative to the last execution
+		// OR if we have no items (e.g. initial load even if key is empty string)
+		// But be careful: empty key matches "all" but items might be empty because it hasn't loaded yet.
+		// So we check if key changed OR items is empty.
+		if (currentFilterKey !== executedFilterKey || (items.length === 0 && loading)) {
+			fetchOutfits();
+			setExecutedFilterKey(currentFilterKey);
+		}
+	}, [searchFilters, executedFilterKey, items.length, fetchOutfits, setExecutedFilterKey, loading]);
 
 	return (
-		<div className="container mx-auto px-4 py-8">
+		<div className="container mx-auto px-4 py-30 md:px-12">
 			<div className="mb-8 space-y-6 w-full flex flex-col items-center justify-start">
 				<div className="text-center space-y-2">
 					<h1 className="text-3xl font-bold tracking-tight">
@@ -169,13 +180,13 @@ export default function SearchPage() {
 						type="search"
 						placeholder="Tìm kiếm theo tiêu đề hoặc mô tả..."
 						value={ keyword }
-						onChange={ (e) => setKeyword(e.target.value) }
+						onChange={ (e) => handleFilterChange("keyword", e.target.value) }
 						className="flex h-10 w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					/>
 				</div>
 
 				<div className="flex flex-wrap w-full gap-2 overflow-x-auto py-2 items-center justify-start md:justify-center no-scrollbar">
-					<Select value={ aesthetic } onValueChange={ setAesthetic }>
+					<Select value={ aesthetic } onValueChange={ (val) => handleFilterChange("aesthetic", val) }>
 						<SelectTrigger className="w-30 rounded-full">
 							<SelectValue placeholder="Aesthetic" />
 						</SelectTrigger>
@@ -188,7 +199,7 @@ export default function SearchPage() {
 							))}
 						</SelectContent>
 					</Select>
-					<Select value={ occasion } onValueChange={ setOccasion }>
+					<Select value={ occasion } onValueChange={ (val) => handleFilterChange("occasion", val) }>
 						<SelectTrigger className="w-30 rounded-full">
 							<SelectValue placeholder="Dịp" />
 						</SelectTrigger>
@@ -201,7 +212,7 @@ export default function SearchPage() {
 							))}
 						</SelectContent>
 					</Select>
-					<Select value={ formality } onValueChange={ setFormality }>
+					<Select value={ formality } onValueChange={ (val) => handleFilterChange("formality", val) }>
 						<SelectTrigger className="w-35 rounded-full">
 							<SelectValue placeholder="Trang trọng" />
 						</SelectTrigger>
@@ -214,7 +225,7 @@ export default function SearchPage() {
 							))}
 						</SelectContent>
 					</Select>
-					<Select value={ season } onValueChange={ setSeason }>
+					<Select value={ season } onValueChange={ (val) => handleFilterChange("season", val) }>
 						<SelectTrigger className="w-27.5 rounded-full">
 							<SelectValue placeholder="Mùa" />
 						</SelectTrigger>
@@ -227,7 +238,7 @@ export default function SearchPage() {
 							))}
 						</SelectContent>
 					</Select>
-					<Select value={ color } onValueChange={ setColor }>
+					<Select value={ color } onValueChange={ (val) => handleFilterChange("color", val) }>
 						<SelectTrigger className="w-30 rounded-full">
 							<SelectValue placeholder="Màu sắc" />
 						</SelectTrigger>
@@ -258,6 +269,11 @@ export default function SearchPage() {
 					hoverScale={ 0.95 }
 					blurToFocus
 					colorShiftOnHover={ false }
+					initialScrollOffset={searchScrollPosition}
+					onItemClick={(item) => {
+						setSearchScrollPosition(window.scrollY);
+						router.push(item.url);
+					}}
 				/>
 			) }
 		</div>

@@ -14,12 +14,33 @@ export interface OutfitItem {
 	saved_by: string[];
 }
 
+export interface SearchFilters {
+	aesthetic?: string;
+	occasion?: string;
+	formality?: string;
+	season?: string;
+	color?: string;
+	keyword: string;
+}
+
 interface OutfitsContextType {
 	items: OutfitItem[];
 	loading: boolean;
 	refetch: (count?: number) => Promise<void>;
 	scrollPosition: number;
 	setScrollPosition: (position: number) => void;
+
+	// Search State
+	searchItems: OutfitItem[];
+	setSearchItems: (items: OutfitItem[]) => void;
+	searchLoading: boolean;
+	setSearchLoading: (loading: boolean) => void;
+	searchFilters: SearchFilters;
+	setSearchFilters: React.Dispatch<React.SetStateAction<SearchFilters>>;
+	searchScrollPosition: number;
+	setSearchScrollPosition: (position: number) => void;
+	executedFilterKey: string;
+	setExecutedFilterKey: (key: string) => void;
 }
 
 const OutfitsContext = createContext<OutfitsContextType | undefined>(undefined);
@@ -38,6 +59,15 @@ export function OutfitsProvider({ children }: { children: ReactNode }) {
 	const [items, setItems] = useState<OutfitItem[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [scrollPosition, setScrollPosition] = useState(0);
+
+	// Search State
+	const [searchItems, setSearchItems] = useState<OutfitItem[]>([]);
+	const [searchLoading, setSearchLoading] = useState(true);
+	const [searchScrollPosition, setSearchScrollPosition] = useState(0);
+	const [executedFilterKey, setExecutedFilterKey] = useState<string>("");
+	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+		keyword: "",
+	});
 	
 	// Track if we have already fetched initially
 	const [hasFetched, setHasFetched] = useState(false);
@@ -134,7 +164,23 @@ export function OutfitsProvider({ children }: { children: ReactNode }) {
 	}, [fetchOutfits, hasFetched, authLoading]);
 
 	return (
-		<OutfitsContext.Provider value={{ items, loading, refetch: fetchOutfits, scrollPosition, setScrollPosition }}>
+		<OutfitsContext.Provider value={{
+			items,
+			loading,
+			refetch: fetchOutfits,
+			scrollPosition,
+			setScrollPosition,
+			searchItems,
+			setSearchItems,
+			searchLoading,
+			setSearchLoading,
+			searchFilters,
+			setSearchFilters,
+			searchScrollPosition,
+			setSearchScrollPosition,
+			executedFilterKey,
+			setExecutedFilterKey
+		}}>
 			{children}
 		</OutfitsContext.Provider>
 	);
