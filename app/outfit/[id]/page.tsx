@@ -302,10 +302,11 @@ export default function OutfitDetailPage() {
 												fill
 												sizes="(max-width:480px) 300px, (max-width: 768px) 400px, (max-width: 1200px) 500px, 33vw"
 												className="object-cover relative z-10"
-												priority={index === 0}
+												// priority={true}
                                                 onLoad={() => {
                                                     if(index === 0) setImagesLoaded(true);
                                                 }}
+												preload={true}
 											/>
 										</div>
 									</CarouselItem>
