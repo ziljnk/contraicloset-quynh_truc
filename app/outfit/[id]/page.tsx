@@ -300,7 +300,7 @@ export default function OutfitDetailPage() {
 												src={image}
 												alt={`${outfit.title} - Image ${index + 1}`}
 												fill
-												sizes="(max-width: 768px) 400px, (max-width: 1200px) 500px, 33vw"
+												sizes="(max-width:480px) 300px, (max-width: 768px) 400px, (max-width: 1200px) 500px, 33vw"
 												className="object-cover relative z-10"
 												priority={index === 0}
                                                 onLoad={() => {
