@@ -65,6 +65,7 @@ export default function OutfitDetailPage() {
 	const [similarOutfits, setSimilarOutfits] = React.useState<any[]>([]);
 	const [loading, setLoading] = React.useState(true);
 	const [loadingSimilar, setLoadingSimilar] = React.useState(true);
+    const [imagesLoaded, setImagesLoaded] = React.useState(false);
     const [isSaved, setIsSaved] = React.useState(false);
     const [isSaving, setIsSaving] = React.useState(false);
     const bookmarkIcon = useIconAnimation<BookmarkIconHandle>();
@@ -156,64 +157,77 @@ export default function OutfitDetailPage() {
 					};
 					setOutfit(currentOutfitData);
 					setLoading(false);
-
-					// Fetch candidates for similarity check
-					const outfitsRef = collection(
-						db,
-						process.env
-							.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!,
-					);
-					const q = query(outfitsRef, limit(100));
-					const querySnapshot = await getDocs(q);
-
-					const candidates = querySnapshot.docs
-						.map((d) => ({ id: d.id, ...d.data() }) as any)
-						.filter((d) => d.id !== id);
-
-					const scoredCandidates = candidates.map((candidate) => {
-						let score = 0;
-						if (
-							candidate.aesthetic &&
-							candidate.aesthetic === currentOutfitData.aesthetic
-						)
-							score += 3;
-						if (
-							candidate.occasion &&
-							candidate.occasion === currentOutfitData.occasion
-						)
-							score += 2;
-						if (
-							candidate.formality &&
-							candidate.formality === currentOutfitData.formality
-						)
-							score += 2;
-						if (
-							candidate.season &&
-							candidate.season === currentOutfitData.season
-						)
-							score += 1;
-						return { ...candidate, score };
-					});
-
-					// Sort by score descending
-					scoredCandidates.sort((a, b) => b.score - a.score);
-
-					// Take top 6
-					setSimilarOutfits(scoredCandidates.slice(0, 6));
 				} else {
 					console.log("No such document!");
 					setLoading(false);
+                    setLoadingSimilar(false);
 				}
 			} catch (error) {
 				console.error("Error fetching outfit:", error);
 				setLoading(false);
-			} finally {
-				setLoadingSimilar(false);
+                setLoadingSimilar(false);
 			}
 		}
 
 		fetchOutfit();
 	}, [id]);
+
+    React.useEffect(() => {
+        async function fetchSimilarOutfits() {
+            if (!outfit || !imagesLoaded) return;
+            
+            try {
+                // Fetch candidates for similarity check
+                const outfitsRef = collection(
+                    db,
+                    process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!,
+                );
+                const q = query(outfitsRef, limit(100));
+                const querySnapshot = await getDocs(q);
+
+                const candidates = querySnapshot.docs
+                    .map((d) => ({ id: d.id, ...d.data() }) as any)
+                    .filter((d) => d.id !== outfit.id);
+
+                const scoredCandidates = candidates.map((candidate) => {
+                    let score = 0;
+                    if (
+                        candidate.aesthetic &&
+                        candidate.aesthetic === outfit.aesthetic
+                    )
+                        score += 3;
+                    if (
+                        candidate.occasion &&
+                        candidate.occasion === outfit.occasion
+                    )
+                        score += 2;
+                    if (
+                        candidate.formality &&
+                        candidate.formality === outfit.formality
+                    )
+                        score += 2;
+                    if (
+                        candidate.season &&
+                        candidate.season === outfit.season
+                    )
+                        score += 1;
+                    return { ...candidate, score };
+                });
+
+                // Sort by score descending
+                scoredCandidates.sort((a, b) => b.score - a.score);
+
+                // Take top 6
+                setSimilarOutfits(scoredCandidates.slice(0, 6));
+            } catch (error) {
+                console.error("Error fetching similar outfits:", error);
+            } finally {
+                setLoadingSimilar(false);
+            }
+        }
+
+        fetchSimilarOutfits();
+	}, [outfit, imagesLoaded]);
 
     React.useEffect(() => {
         if (outfit && user) {
@@ -286,9 +300,12 @@ export default function OutfitDetailPage() {
 												src={image}
 												alt={`${outfit.title} - Image ${index + 1}`}
 												fill
-												sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+												sizes="(max-width: 768px) 400px, (max-width: 1200px) 500px, 33vw"
 												className="object-cover relative z-10"
 												priority={index === 0}
+                                                onLoad={() => {
+                                                    if(index === 0) setImagesLoaded(true);
+                                                }}
 											/>
 										</div>
 									</CarouselItem>
