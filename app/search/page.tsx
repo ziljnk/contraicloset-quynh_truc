@@ -111,6 +111,14 @@ export default function SearchPage() {
 				if (season && season !== "all") constraints.push(where("season", "==", season));
 				if (color && color !== "all") constraints.push(where("color_palette", "==", color));
 
+				if (keyword.trim() !== "") {
+					let searchTitle = keyword.trim();
+					if (!searchTitle.startsWith("#")) {
+						searchTitle = "#" + searchTitle;
+					}
+					constraints.push(where("title", "==", searchTitle));
+				}
+
 				// Note: complex queries might require composite indexes in Firestore
 				const q = query(outfitsCollection, ...constraints, limit(50));
 				const snapshot = await getDocs(q);
@@ -118,18 +126,6 @@ export default function SearchPage() {
 				const fetchedItems: OutfitItem[] = [];
 				snapshot.forEach((doc) => {
 					const data = doc.data();
-
-					// Basic Text Search implementation
-					if (keyword.trim() !== "") {
-						const lowerKeyword = keyword.toLowerCase();
-						const title = (data.title || "").toLowerCase();
-						const id = (data.id || "").toLowerCase();
-
-						// Search in both title and id
-						if (!title.includes(lowerKeyword) && !id.includes(lowerKeyword)) {
-							return;
-						}
-					}
 
 					const imgUrl = Array.isArray(data.images) && data.images.length > 0 ? data.images[ 0 ] : "https://placehold.co/600x400";
 					fetchedItems.push({

@@ -176,7 +176,7 @@ export default function Header() {
 							</Popover>
 							<Link href="/admin/analytics">
 								<Button>
-									<BarChart2 className="md:mr-2 h-4 w-4" />
+									<BarChart2 className="h-4 w-4" />
 									<span className="hidden md:inline-block">
 										Thống kê
 									</span>
@@ -184,7 +184,7 @@ export default function Header() {
 							</Link>
 							<Link href="/admin/create-outfit">
 								<Button className="rounded-full">
-									<Plus className="md:mr-2 h-4 w-4" />
+									<Plus className="h-4 w-4" />
 									<span className="hidden md:inline-block">
 										Tạo mới
 									</span>
