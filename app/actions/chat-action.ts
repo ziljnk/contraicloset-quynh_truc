@@ -210,14 +210,15 @@ export async function getChatResponse(message: string): Promise<ChatResponse> {
         CÁCH TRẢ LỜI:
             - Bắt đầu với: "Dựa trên outfit có sẵn..."
             - Gợi ý 2-3 outfit từ danh sách
-            - Mỗi outfit: [TÊN ĐÚNG] + tại sao phù hợp + cách phối
+            - Mỗi outfit: [TÊN ĐÚNG] + tại sao phù hợp + cách phối (sử dụng \n để xuống dòng giữa các outfit)
             - Kết thúc với: tips accessories
+            - Hãy trình bày câu trả lời thoáng, dễ đọc bằng cách sử dụng ký tự \n để xuống dòng.
         4. Trả về câu trả lời dưới dạng JSON object với cấu trúc:
         {
             "selected_ids": ["id_1", "id_2"],
-            "message": "Lời khuyên của bạn ở đây..."
+            "message": "Lời khuyên của bạn ở đây... (có chứa \n), trả lời dưới dạng markdown, không được chứa HTML."
         }
-        CHỈ TRẢ VỀ JSON, KHÔNG CÓ MARKDOWN HAY TEXT KHÁC.
+        CHỈ TRẢ VỀ JSON, KHÔNG CÓ TEXT KHÁC.
         `;
 
 		const result = await model.generateContent(prompt);

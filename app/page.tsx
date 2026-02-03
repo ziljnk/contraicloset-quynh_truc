@@ -16,7 +16,7 @@ export default function Home() {
 	const { isAdmin } = useAuth();
 	const plusIcon = useIconAnimation<PlusIconHandle>();
 	const rotateIcon = useIconAnimation<RotateCCWIconHandle>();
-	const { items, loading, refetch: fetchOutfits } = useRandomOutfits(100);
+	const { items, loading, refetch: fetchOutfits, scrollPosition, setScrollPosition } = useRandomOutfits(100);
 
 	return (
 		<div className="container mx-auto py-8 px-4 md:px-12">
@@ -64,6 +64,11 @@ export default function Home() {
 						hoverScale={0.95}
 						blurToFocus
 						colorShiftOnHover={false}
+						initialScrollOffset={scrollPosition}
+						onItemClick={(item) => {
+							setScrollPosition(window.scrollY);
+							router.push(item.url);
+						}}
 					/>
 					
 					{items.length > 0 && (

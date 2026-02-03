@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils"
 import { getChatResponse } from "@/app/actions/chat-action"
 import Link from "next/link"
 import Image from "next/image"
+import ReactMarkdown from "react-markdown"
+import remarkBreaks from "remark-breaks"
 
 type OutfitData = {
     id: string;
@@ -123,7 +125,19 @@ export function ChatBot() {
                                 : "bg-[#3E3228] text-white ml-auto rounded-tr-sm"
                         )}
                     >
-                        {msg.text}
+                        <ReactMarkdown 
+                            remarkPlugins={[remarkBreaks]}
+                            components={{
+                                p: ({node: _node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                                ul: ({node: _node, ...props}) => <ul className="list-disc ml-4 mb-2 last:mb-0" {...props} />,
+                                ol: ({node: _node, ...props}) => <ol className="list-decimal ml-4 mb-2 last:mb-0" {...props} />,
+                                li: ({node: _node, ...props}) => <li className="mb-1" {...props} />,
+                                a: ({node: _node, ...props}) => <a className="underline hover:opacity-80" {...props} />,
+                                strong: ({node: _node, ...props}) => <span className="font-bold" {...props} />,
+                            }}
+                        >
+                            {msg.text}
+                        </ReactMarkdown>
                     </div>
                     
                     {/* Render Outfits if available */}

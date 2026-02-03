@@ -116,6 +116,8 @@ interface MasonryProps {
   hoverScale?: number;
   blurToFocus?: boolean;
   colorShiftOnHover?: boolean;
+  onItemClick?: (item: Item) => void;
+  initialScrollOffset?: number;
 }
 
 interface MasonryItemProps {
@@ -129,6 +131,7 @@ interface MasonryItemProps {
   colorShiftOnHover: boolean;
   blurToFocus: boolean;
   animateFrom: string;
+  onItemClick?: (item: Item) => void;
 }
 
 const MasonryItem: React.FC<MasonryItemProps> = ({
@@ -141,6 +144,7 @@ const MasonryItem: React.FC<MasonryItemProps> = ({
   hoverScale,
   colorShiftOnHover,
   blurToFocus,
+  onItemClick,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
@@ -154,7 +158,7 @@ const MasonryItem: React.FC<MasonryItemProps> = ({
           observer.disconnect();
         }
       },
-      { rootMargin: "0px 0px 50px 0px" },
+      { rootMargin: "0px 0px 200px 0px" },
     );
 
     if (ref.current) observer.observe(ref.current);
@@ -250,7 +254,13 @@ const MasonryItem: React.FC<MasonryItemProps> = ({
       data-key={item.id}
       className="absolute box-content group cursor-pointer"
       style={{ willChange: "transform, width, height, opacity" }}
-      onClick={() => router.push(item.url)}
+      onClick={() => {
+        if (onItemClick) {
+          onItemClick(item);
+        } else {
+          router.push(item.url);
+        }
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -281,6 +291,8 @@ const Masonry: React.FC<MasonryProps> = ({
   items,
   ease = "power3.out",
   duration = 0.6,
+  onItemClick,
+  initialScrollOffset,
   stagger = 0.05,
   animateFrom = "bottom",
   scaleOnHover = true,
@@ -352,6 +364,7 @@ const Masonry: React.FC<MasonryProps> = ({
   const [dimensions, setDimensions] = useState<
     Record<string, { width: number; height: number }>
   >({});
+  const hasRestored = useRef(false);
 
   useEffect(() => {
     if (items.some((item) => !dimensions[item.id])) {
@@ -363,6 +376,13 @@ const Masonry: React.FC<MasonryProps> = ({
       setImagesReady(true);
     });
   }, [items]);
+
+  useEffect(() => {
+    if (!hasRestored.current && imagesReady && width > 0 && initialScrollOffset !== undefined && initialScrollOffset > 0) {
+      window.scrollTo({ top: initialScrollOffset, behavior: "smooth" });
+      hasRestored.current = true;
+    }
+  }, [imagesReady, initialScrollOffset, width]);
 
   const grid = useMemo<GridItem[]>(() => {
     if (!width) return [];
@@ -415,6 +435,7 @@ const Masonry: React.FC<MasonryProps> = ({
           key={item.id}
           item={item}
           handleBookmark={handleBookmark}
+          onItemClick={onItemClick}
           isSaved={!!savedStatus[item.id]}
           router={router}
           canHover={canHover}

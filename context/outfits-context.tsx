@@ -18,6 +18,8 @@ interface OutfitsContextType {
 	items: OutfitItem[];
 	loading: boolean;
 	refetch: (count?: number) => Promise<void>;
+	scrollPosition: number;
+	setScrollPosition: (position: number) => void;
 }
 
 const OutfitsContext = createContext<OutfitsContextType | undefined>(undefined);
@@ -35,6 +37,7 @@ export function OutfitsProvider({ children }: { children: ReactNode }) {
 	const { user, loading: authLoading } = useAuth();
 	const [items, setItems] = useState<OutfitItem[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [scrollPosition, setScrollPosition] = useState(0);
 	
 	// Track if we have already fetched initially
 	const [hasFetched, setHasFetched] = useState(false);
@@ -131,7 +134,7 @@ export function OutfitsProvider({ children }: { children: ReactNode }) {
 	}, [fetchOutfits, hasFetched, authLoading]);
 
 	return (
-		<OutfitsContext.Provider value={{ items, loading, refetch: fetchOutfits }}>
+		<OutfitsContext.Provider value={{ items, loading, refetch: fetchOutfits, scrollPosition, setScrollPosition }}>
 			{children}
 		</OutfitsContext.Provider>
 	);
