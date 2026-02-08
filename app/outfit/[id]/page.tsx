@@ -118,59 +118,66 @@ export default function OutfitDetailPage() {
         }
     };
 
+    const fetchOutfit = React.useCallback(async () => {
+        if (!id) return;
+
+        setLoading(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        try {
+            const docRef = doc(
+                db,
+                process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!,
+                id,
+            );
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                console.log("data", data);
+
+                const currentOutfitData = {
+                    id: docSnap.id,
+                    title: data.title || `#${id.slice(0, 6)}`,
+                    images: data.images || ["https://placehold.co/600x900"],
+                    source: data.image_source || "",
+                    aesthetic: data.aesthetic || data.aesthetic_vibe,
+                    occasion: data.occasion,
+                    formality: data.formality,
+                    season: data.season,
+                    saved_by: data.saved_by || [],
+                    color_palette: data.color_palette || data.colors,
+                    main_material: data.main_material || data.material,
+                    pattern: data.pattern,
+                    fit_silhouette: data.fit_silhouette || data.fit,
+                    layering_depth: data.layering_depth || data.layerCount,
+                    category_composition: data.category_composition || data.components,
+                    product_links: data.product_links,
+                    items:
+                        data.product_links?.map((link: any) => ({
+                            url: link.link,
+                            label: link.name,
+                            type: "Sản phẩm",
+                        })) || [],
+                };
+                setOutfit(currentOutfitData);
+                setLoading(false);
+            } else {
+                console.log("No such document!");
+                setLoading(false);
+                setLoadingSimilar(false);
+            }
+        } catch (error) {
+            console.error("Error fetching outfit:", error);
+            setLoading(false);
+            setLoadingSimilar(false);
+        }
+    }, [id]);
+
 
 	React.useEffect(() => {
-		async function fetchOutfit() {
-			if (!id) return;
-
-			setLoading(true);
-			window.scrollTo({ top: 0, behavior: "smooth" });
-
-			try {
-				const docRef = doc(
-					db,
-					process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!,
-					id,
-				);
-				const docSnap = await getDoc(docRef);
-
-				if (docSnap.exists()) {
-					const data = docSnap.data();
-					console.log("data", data);
-
-					const currentOutfitData = {
-						id: docSnap.id,
-						title: data.title || `#${id.slice(0, 6)}`,
-						images: data.images || ["https://placehold.co/600x900"],
-						source: data.image_source || "",
-						aesthetic: data.aesthetic,
-						occasion: data.occasion,
-						formality: data.formality,
-						season: data.season,
-                        saved_by: data.saved_by || [],
-						items:
-							data.product_links?.map((link: any) => ({
-								url: link.link,
-								label: link.name,
-								type: "Sản phẩm",
-							})) || [],
-					};
-					setOutfit(currentOutfitData);
-					setLoading(false);
-				} else {
-					console.log("No such document!");
-					setLoading(false);
-                    setLoadingSimilar(false);
-				}
-			} catch (error) {
-				console.error("Error fetching outfit:", error);
-				setLoading(false);
-                setLoadingSimilar(false);
-			}
-		}
-
 		fetchOutfit();
-	}, [id]);
+	}, [fetchOutfit]);
 
     React.useEffect(() => {
         async function fetchSimilarOutfits() {
@@ -333,7 +340,7 @@ export default function OutfitDetailPage() {
 							{isAdmin && (<div>
                                 <TooltipProvider>
                                     <Tooltip>
-                                        <EditOutfitDialog outfit={outfit}>
+                                        <EditOutfitDialog outfit={outfit} onSuccess={fetchOutfit}>
                                             <TooltipTrigger asChild>
                                                 <Button variant="outline" size={"icon"} className="rounded-full">
                                                     <SquarePenIcon />

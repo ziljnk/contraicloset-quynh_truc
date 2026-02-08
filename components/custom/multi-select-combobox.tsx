@@ -26,6 +26,8 @@ interface MultiSelectComboboxProps {
   onChange: (value: string[]) => void
   placeholder?: string
   className?: string
+  modal?: boolean // Deprecated or unused now? Keep for compat
+  container?: HTMLElement | null
 }
 
 export function MultiSelectCombobox({
@@ -34,6 +36,8 @@ export function MultiSelectCombobox({
   onChange,
   placeholder = "Select items...",
   className,
+  modal = false,
+  container
 }: MultiSelectComboboxProps) {
   const anchor = useComboboxAnchor()
 
@@ -56,32 +60,34 @@ export function MultiSelectCombobox({
       onInputValueChange={ (val) => setInputValue(val) }
       filter={ (item, search) => item.label.toLowerCase().includes(search.toLowerCase()) }
     >
-      <ComboboxChips ref={ anchor } className={ className }>
-        <ComboboxValue>
-          { (values) => (
-            <React.Fragment>
-              { values.map((item: any) => (
-                <ComboboxChip key={ item.value }>
-                  { item.label }
-                </ComboboxChip>
-              )) }
-              <ComboboxChipsInput
-                placeholder={ values.length === 0 ? placeholder : undefined }
-              />
-            </React.Fragment>
-          ) }
-        </ComboboxValue>
-      </ComboboxChips>
-      <ComboboxContent anchor={ anchor }>
-        <ComboboxEmpty>No items found.</ComboboxEmpty>
-        <ComboboxList>
-          { (item: any) => (
-            <ComboboxItem key={ item.value } value={ item }>
-              { item.label }
-            </ComboboxItem>
-          ) }
-        </ComboboxList>
-      </ComboboxContent>
+      <div className="relative">
+        <ComboboxChips ref={ anchor } className={ className }>
+            <ComboboxValue>
+            { (values) => (
+                <React.Fragment>
+                { values.map((item: any) => (
+                    <ComboboxChip key={ item.value }>
+                    { item.label }
+                    </ComboboxChip>
+                )) }
+                <ComboboxChipsInput
+                    placeholder={ values.length === 0 ? placeholder : undefined }
+                />
+                </React.Fragment>
+            ) }
+            </ComboboxValue>
+        </ComboboxChips>
+        <ComboboxContent anchor={ anchor } container={container}>
+            <ComboboxEmpty>No items found.</ComboboxEmpty>
+            <ComboboxList>
+            { (item: any) => (
+                <ComboboxItem key={ item.value } value={ item }>
+                { item.label }
+                </ComboboxItem>
+            ) }
+            </ComboboxList>
+        </ComboboxContent>
+      </div>
     </Combobox>
   )
 }
