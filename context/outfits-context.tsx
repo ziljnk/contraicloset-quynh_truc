@@ -159,7 +159,7 @@ export function OutfitsProvider({ children }: { children: ReactNode }) {
 	// Initial fetch - only if we haven't fetched yet and auth is determined
 	useEffect(() => {
 		if (!hasFetched && !authLoading) {
-			fetchOutfits(400);
+			fetchOutfits(100);
 		}
 	}, [fetchOutfits, hasFetched, authLoading]);
 

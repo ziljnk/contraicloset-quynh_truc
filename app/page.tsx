@@ -16,7 +16,7 @@ export default function Home() {
 	const { isAdmin } = useAuth();
 	const plusIcon = useIconAnimation<PlusIconHandle>();
 	const rotateIcon = useIconAnimation<RotateCCWIconHandle>();
-	const { items, loading, refetch: fetchOutfits, scrollPosition, setScrollPosition } = useRandomOutfits(400);
+	const { items, loading, refetch: fetchOutfits, scrollPosition, setScrollPosition } = useRandomOutfits(100);
 
 	return (
 		<div className="container mx-auto py-8 px-4 md:px-12">
