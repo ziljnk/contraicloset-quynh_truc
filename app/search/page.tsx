@@ -22,6 +22,7 @@ import {
 } from "@/constant/outfit-options";
 import { useOutfitsContext, type OutfitItem } from "@/context/outfits-context";
 import { useRouter } from "next/navigation";
+import { getPrimaryOutfitImageSources } from "@/utils/image-variants";
 
 const generateRandomId = () => {
 	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -90,11 +91,13 @@ export default function SearchPage() {
 				docs.forEach((doc) => {
 					if (uniqueItems.has(doc.id)) return;
 					const data = doc.data();
-					const imgUrl = Array.isArray(data.images) && data.images.length > 0 ? data.images[ 0 ] : "https://placehold.co/600x400";
+					const primaryImage = getPrimaryOutfitImageSources(data);
 					uniqueItems.set(doc.id, {
 						id: doc.id,
-						img: imgUrl,
-						url: `/outfit/${encodeURIComponent(doc.id)}`,
+						img: primaryImage.desktop,
+						desktopImg: primaryImage.desktop,
+						mobileImg: primaryImage.mobile,
+						url: `/outfit/${(data.title || doc.id).replace(/^#/, '')}`,
 						height: 0,
 						saved_by: data.saved_by || [],
 					});
@@ -126,12 +129,13 @@ export default function SearchPage() {
 				const fetchedItems: OutfitItem[] = [];
 				snapshot.forEach((doc) => {
 					const data = doc.data();
-
-					const imgUrl = Array.isArray(data.images) && data.images.length > 0 ? data.images[ 0 ] : "https://placehold.co/600x400";
+					const primaryImage = getPrimaryOutfitImageSources(data);
 					fetchedItems.push({
 						id: doc.id,
-						img: imgUrl,
-						url: `/outfit/${encodeURIComponent(doc.id)}`,
+						img: primaryImage.desktop,
+						desktopImg: primaryImage.desktop,
+						mobileImg: primaryImage.mobile,
+						url: `/outfit/${(data.title || doc.id).replace(/^#/, '')}`,
 						saved_by: data.saved_by || [],
 						height: 0,
 					});

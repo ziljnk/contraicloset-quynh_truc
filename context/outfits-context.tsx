@@ -5,10 +5,13 @@ import { collection, getDocs, limit, query, orderBy, startAt, documentId, doc, g
 import { db } from "@/utils/firebase";
 import { useAuth } from "@/hooks/use-auth";
 import { calculateOutfitScore } from "@/utils/recommendation";
+import { getPrimaryOutfitImageSources } from "@/utils/image-variants";
 
 export interface OutfitItem {
 	id: string;
 	img: string;
+	desktopImg?: string;
+	mobileImg?: string;
 	url: string;
 	height: number;
 	saved_by: string[];
@@ -125,15 +128,14 @@ export function OutfitsProvider({ children }: { children: ReactNode }) {
 				if (uniqueItems.has(d.id)) return;
 
 				const data = d.data();
-				// Get the first image from the images array, fallback to placeholder
-				const imgUrl = Array.isArray(data.images) && data.images.length > 0
-					? data.images[ 0 ]
-					: "https://placehold.co/600x400";
+				const primaryImage = getPrimaryOutfitImageSources(data);
 
 				uniqueItems.set(d.id, {
 					id: d.id,
-					img: imgUrl,
-					url: `/outfit/${encodeURIComponent(d.id)}`,
+					img: primaryImage.desktop,
+					desktopImg: primaryImage.desktop,
+					mobileImg: primaryImage.mobile,
+					url: `/outfit/${(data.title || d.id).replace(/^#/, '')}`,
 					height: 0, // Height will be calculated by Masonry based on image aspect ratio
 					saved_by: data.saved_by || [],
 				});

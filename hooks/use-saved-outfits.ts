@@ -3,6 +3,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 import { useAuth } from "./use-auth";
 import { OutfitItem } from "./use-random-outfits";
+import { getPrimaryOutfitImageSources } from "@/utils/image-variants";
 
 export function useSavedOutfits() {
 	const { user } = useAuth();
@@ -30,14 +31,14 @@ export function useSavedOutfits() {
 				const fetchedItems: OutfitItem[] = [];
 				snapshot.forEach((doc) => {
 					const data = doc.data();
-					const imgUrl = Array.isArray(data.images) && data.images.length > 0
-						? data.images[ 0 ]
-						: "https://placehold.co/600x400";
+					const primaryImage = getPrimaryOutfitImageSources(data);
 
 					fetchedItems.push({
 						id: doc.id,
-						img: imgUrl,
-						url: `/outfit/${encodeURIComponent(doc.id)}`,
+						img: primaryImage.desktop,
+						desktopImg: primaryImage.desktop,
+						mobileImg: primaryImage.mobile,
+						url: `/outfit/${(data.title || doc.id).replace(/^#/, '')}`,
 						height: 0, 
 						saved_by: data.saved_by || [],
 					});

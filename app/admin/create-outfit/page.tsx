@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/utils/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, doc, setDoc, serverTimestamp } from "firebase/firestore";
 // import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -160,8 +160,12 @@ export default function CreateOutfitPage() {
 		setIsSubmitting(true);
 
 		try {
+			const newDocRef = doc(collection(db, process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!));
+			const outfitId = newDocRef.id;
+
 			// 1. Upload Images using API Route
 			const uploadData = new FormData();
+			uploadData.append("outfitId", outfitId);
 			imageFiles.forEach(file => uploadData.append("files", file));
 
 			const response = await fetch("/api/upload", {
@@ -194,9 +198,9 @@ export default function CreateOutfitPage() {
 				main_material: formData.material.join("_") || "cotton",
 				fit_silhouette: formData.fit.join("_") || "relaxed_fit",
 				aesthetic_vibe: formData.aesthetic.join("_") || "streetwear",
-				id: formData.title, // using title as ID prefix or similar as per sample
-				images: imageUrls,
-				saved_by: user ? [ user.uid ] : [],
+				id: outfitId, // using title as ID prefix or similar as per sample
+				outfit_images: imageUrls,
+				saved_by: [],
 				created_date: serverTimestamp(),
 				title: formData.title,
 				color_palette: formData.mainColor.join("_") || "black_grey",
@@ -204,7 +208,7 @@ export default function CreateOutfitPage() {
 				category_composition: mainComponents
 			};
 
-			await addDoc(collection(db, process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!), outfitData);
+			await setDoc(doc(db, process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!, outfitId), outfitData);
 
 			toast.success("Outfit created successfully!");
 			// Reset form

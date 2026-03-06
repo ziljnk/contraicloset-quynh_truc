@@ -10,12 +10,16 @@ import { doc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "react-responsive";
+import { getPrimaryOutfitImageSources, getResponsiveImageUrl } from "@/utils/image-variants";
 
 export function SimilarOutfitCard({ outfit }: { outfit: any }) {
 	const { user } = useAuth();
 	const icon = useIconAnimation<BookmarkIconHandle>();
 	const [isSaved, setIsSaved] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
+	const isMobile = useMediaQuery({ maxWidth: 768 });
+	const imageSource = getPrimaryOutfitImageSources(outfit);
 
 	useEffect(() => {
 		if (user && outfit?.saved_by) {
@@ -75,13 +79,11 @@ export function SimilarOutfitCard({ outfit }: { outfit: any }) {
 	return (
 		<div className="group relative aspect-3/4 overflow-hidden rounded-xl bg-gray-100">
 			<Link
-				href={`/outfit/${encodeURIComponent(outfit.id)}`}
+				href={`/outfit/${(outfit.title || outfit.id).replace(/^#/, '')}`}
 				className="block w-full h-full"
 			>
 				<Image
-					src={
-						outfit.images?.[0] || "https://placehold.co/600x900"
-					}
+					src={getResponsiveImageUrl(imageSource, isMobile)}
 					alt={outfit.title || "Outfit"}
 					fill
 					sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

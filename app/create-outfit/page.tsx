@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/utils/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, setDoc, doc, serverTimestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -150,8 +150,12 @@ export default function CreateOutfitPage() {
 		setIsSubmitting(true);
 
 		try {
+			const newDocRef = doc(collection(db, "pending_outfits"));
+			const pendingOutfitId = newDocRef.id;
+
 			// 1. Upload Images using API Route
 			const uploadData = new FormData();
+			uploadData.append("outfitId", pendingOutfitId);
 			// Sanitize filenames to prevent "string did not match expected pattern" error
 			// which can happen when filenames contain special characters/unicode
 			imageFiles.forEach((file, index) => {
@@ -160,7 +164,7 @@ export default function CreateOutfitPage() {
 				uploadData.append("files", file, safeName);
 			});
 
-			let imageUrls: string[] = [];
+			let imageUrls: any[] = [];
 			
 			try {
 				const response = await fetch("/api/upload", {
@@ -207,17 +211,16 @@ export default function CreateOutfitPage() {
 				
 				title: formData.title || "",
 				description: formData.description || "",
-				
-				images: imageUrls,
-				imageUrl: imageUrls[0] || "",
-				
+
+				outfit_images: imageUrls,
+				imageUrl: imageUrls[0]?.variants?.desktop || imageUrls[0]?.original_url || "",
+
 				status: "pending",
 				createdAt: serverTimestamp(),
 			};
 
 			// 3. Add to pending_outfits
-			const docRef = await addDoc(collection(db, "pending_outfits"), outfitData);
-			const pendingOutfitId = docRef.id;
+			await setDoc(newDocRef, outfitData);
 
             // 4. Add Notification to reports collection
             const reportData = {

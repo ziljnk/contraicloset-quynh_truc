@@ -1,43 +1,40 @@
 "use server";
 
-import cloudinary from "@/utils/cloudinary";
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { r2 } from "@/utils/r2";
 
-export async function deleteImagesFromCloudinary(imageUrls: string[]) {
+const bucketName = process.env.R2_BUCKET_NAME!;
+
+export async function deleteImagesFromR2(imageUrls: string[]) {
     try {
+        const r2PublicDomain = process.env.NEXT_PUBLIC_R2_PUBLIC_URL ? new URL(process.env.NEXT_PUBLIC_R2_PUBLIC_URL).hostname : "";
+
         const deletePromises = imageUrls.map(async (url) => {
-            // Extract public_id from URL
-            // Example: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/folder/image.jpg
-            // public_id: folder/image
-            
             try {
-                // Split by '/'
-                const parts = url.split('/');
-                
-                // Find index of 'upload'
-                const uploadIndex = parts.indexOf('upload');
-                
-                if (uploadIndex === -1 || uploadIndex + 2 >= parts.length) {
-                    console.warn(`Could not extract public_id from URL: ${url}`);
+                // Extract file name from URL
+                const urlObj = new URL(url);
+
+                if (r2PublicDomain && urlObj.hostname !== r2PublicDomain) {
+                    console.warn(`URL does not match R2 domain, skipping R2 deletion: ${url}`);
                     return;
                 }
 
-                // The parts after 'upload' and version (v...) are the public_id parts
-                // Version usually starts with 'v' and is numbers. 
-                // However, sometimes version is omitted or flexible.
-                
-                // Let's assume standard Cloudinary URL structure where version follows 'upload'
-                // and then the public path starts.
-                
-                const versionIndex = uploadIndex + 1;
-                const publicIdParts = parts.slice(versionIndex + 1);
-                
-                // Join parts and remove extension
-                const publicIdWithExtension = publicIdParts.join('/');
-                const publicId = publicIdWithExtension.replace(/\.[^/.]+$/, "");
-                
-                console.log(`Deleting image with public_id: ${publicId}`);
+                // urlObj.pathname is like "/outfitId/image.webp". Remove the leading slash.
+                const key = decodeURIComponent(urlObj.pathname.slice(1));
 
-                await cloudinary.uploader.destroy(publicId);
+                if (!key) {
+                    console.warn(`Could not extract key from URL: ${url}`);
+                    return;
+                }
+
+                console.log(`Deleting image with key: ${key}`);
+
+                const command = new DeleteObjectCommand({
+                    Bucket: bucketName,
+                    Key: key,
+                });
+
+                await r2.send(command);
             } catch (err) {
                 console.error(`Failed to parse or delete image: ${url}`, err);
             }
@@ -46,7 +43,7 @@ export async function deleteImagesFromCloudinary(imageUrls: string[]) {
         await Promise.all(deletePromises);
         return { success: true };
     } catch (error) {
-        console.error("Error deleting images from Cloudinary:", error);
+        console.error("Error deleting images from R2:", error);
         return { success: false, error: "Failed to delete images" };
     }
 }

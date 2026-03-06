@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useMediaQuery } from "react-responsive";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -13,6 +14,7 @@ import {
     updateDoc,
     arrayUnion,
     arrayRemove,
+    where,
 } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 import {
@@ -45,6 +47,11 @@ import { useIconAnimation } from "@/hooks/use-icon-animation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { trackUserPreference } from "@/utils/recommendation";
+import {
+    collectOutfitImageUrls,
+    getOutfitImageSourceList,
+    getResponsiveImageUrl,
+} from "@/utils/image-variants";
 
 export default function OutfitDetailPage() {
 	const params = useParams();
@@ -68,7 +75,19 @@ export default function OutfitDetailPage() {
     const [imagesLoaded, setImagesLoaded] = React.useState(false);
     const [isSaved, setIsSaved] = React.useState(false);
     const [isSaving, setIsSaving] = React.useState(false);
+    const [mounted, setMounted] = React.useState(false);
+    const isMobile = useMediaQuery({ maxWidth: 768 });
     const bookmarkIcon = useIconAnimation<BookmarkIconHandle>();
+    const displayImages = React.useMemo(() => {
+        if (!outfit?.imageSources) return [];
+        return outfit.imageSources.map((source: any) =>
+            getResponsiveImageUrl(source, isMobile),
+        );
+    }, [outfit?.imageSources, isMobile]);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Track view when outfit is loaded
     React.useEffect(() => {
@@ -125,21 +144,63 @@ export default function OutfitDetailPage() {
         window.scrollTo({ top: 0, behavior: "smooth" });
 
         try {
-            const docRef = doc(
-                db,
-                process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!,
-                id,
-            );
-            const docSnap = await getDoc(docRef);
+            let currentOutfitId = id;
+            let currentDocSnap = null;
+            let docData = null;
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
+            // Prepare potential titles (with and without #)
+            const titleToSearch = id.startsWith('#') ? id : `#${id}`;
+
+            // Try to find by title first
+            const outfitsRef = collection(
+                db,
+                process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!
+            );
+            
+            // Try searching with the "#" prepended as it's common in the database
+            const titleQueryWithHash = query(outfitsRef, where("title", "==", titleToSearch), limit(1));
+            const titleSnapshotWithHash = await getDocs(titleQueryWithHash);
+
+            if (!titleSnapshotWithHash.empty) {
+                currentDocSnap = titleSnapshotWithHash.docs[0];
+                currentOutfitId = currentDocSnap.id;
+                docData = currentDocSnap.data();
+            } else {
+                // Try searching with original id as title just in case
+                const titleQuery = query(outfitsRef, where("title", "==", id), limit(1));
+                const titleSnapshot = await getDocs(titleQuery);
+                
+                if (!titleSnapshot.empty) {
+                    currentDocSnap = titleSnapshot.docs[0];
+                    currentOutfitId = currentDocSnap.id;
+                    docData = currentDocSnap.data();
+                } else {
+                    // Fallback to searching by ID just in case
+                    const docRef = doc(
+                        db,
+                        process.env.NEXT_PUBLIC_FIREBASE_OUTFITS_COLLECTION_NAME!,
+                        id,
+                    );
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        currentDocSnap = docSnap;
+                        currentOutfitId = docSnap.id;
+                        docData = docSnap.data();
+                    }
+                }
+            }
+
+            if (currentDocSnap && docData) {
+                const data = docData;
                 console.log("data", data);
 
                 const currentOutfitData = {
-                    id: docSnap.id,
-                    title: data.title || `#${id.slice(0, 6)}`,
-                    images: data.images || ["https://placehold.co/600x900"],
+                    id: currentOutfitId,
+                    title: data.title || `#${currentOutfitId.slice(0, 6)}`,
+                    images: data.images || [],
+                    outfit_images: data.outfit_images || [],
+                    imageSources: getOutfitImageSourceList(data),
+                    allImageUrls: collectOutfitImageUrls(data),
                     source: data.image_source || "",
                     aesthetic: data.aesthetic || data.aesthetic_vibe,
                     occasion: data.occasion,
@@ -298,7 +359,7 @@ export default function OutfitDetailPage() {
 				<div className="w-full lg:w-3/5 bg-secondary/20 rounded-xl relative flex items-center justify-center p-4 lg:p-12">
 					<Carousel className="w-full max-w-sm lg:max-w-md">
 						<CarouselContent>
-							{outfit.images.map(
+                            {displayImages.map(
 								(image: string, index: number) => (
 									<CarouselItem key={index}>
 										<div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg shadow-xl bg-secondary/10">
@@ -320,7 +381,7 @@ export default function OutfitDetailPage() {
 								),
 							)}
 						</CarouselContent>
-						{outfit.images.length > 1 && (
+                        {displayImages.length > 1 && (
 							<>
 								<CarouselPrevious />
 								<CarouselNext />
@@ -353,7 +414,7 @@ export default function OutfitDetailPage() {
                                     </Tooltip>
 
                                     <Tooltip>
-                                        <DeleteOutfitDialog outfitId={outfit.id} images={outfit.images}>
+                                        <DeleteOutfitDialog outfitId={outfit.id} images={outfit.allImageUrls}>
                                             <TooltipTrigger asChild>
                                                 <Button variant="destructive" size={"icon"} className="ml-2 rounded-full">
                                                     <DeleteIcon />

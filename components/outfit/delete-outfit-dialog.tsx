@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/utils/firebase";
-import { deleteImagesFromCloudinary } from "@/app/actions/outfit-action";
+import { deleteImagesFromR2 } from "@/app/actions/outfit-action";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,9 +30,9 @@ export function DeleteOutfitDialog({ outfitId, images, children }: DeleteOutfitD
   const handleDelete = async () => {
     setLoading(true);
     try {
-      // 1. Delete images from Cloudinary
+      // 1. Delete images from R2
       if (images && images.length > 0) {
-        await deleteImagesFromCloudinary(images);
+        await deleteImagesFromR2(images);
       }
 
       // 2. Delete document from Firestore

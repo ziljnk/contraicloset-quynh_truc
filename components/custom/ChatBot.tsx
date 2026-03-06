@@ -10,6 +10,8 @@ import Link from "next/link"
 import Image from "next/image"
 import ReactMarkdown from "react-markdown"
 import remarkBreaks from "remark-breaks"
+import { useMediaQuery } from "react-responsive"
+import { getPrimaryOutfitImageSources, getResponsiveImageUrl } from "@/utils/image-variants"
 
 type OutfitData = {
     id: string;
@@ -26,6 +28,7 @@ type Message = {
 };
 
 export function ChatBot() {
+    const isMobile = useMediaQuery({ maxWidth: 768 })
   const [isOpen, setIsOpen] = React.useState(false)
   const [messages, setMessages] = React.useState<Message[]>([
     {
@@ -146,12 +149,12 @@ export function ChatBot() {
                             {msg.outfits.map((outfit) => (
                                 <Link 
                                     key={outfit.id} 
-                                    href={`/outfit/${encodeURIComponent(outfit.id)}`}
+                                    href={`/outfit/${(outfit.title || outfit.id).replace(/^#/, '')}`}
                                     className="flex items-center gap-3 p-2 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all hover:border-[#3E3228]/20 group"
                                 >
                                     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gray-100 border border-gray-100">
                                         <Image
-                                            src={outfit.images?.[0] || outfit.imageSource || "https://placehold.co/100"}
+                                            src={getResponsiveImageUrl(getPrimaryOutfitImageSources(outfit), isMobile)}
                                             alt={outfit.title}
                                             fill
                                             className="object-cover group-hover:scale-105 transition-transform duration-300"
