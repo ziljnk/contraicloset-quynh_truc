@@ -7,8 +7,8 @@ const bucketName = process.env.R2_BUCKET_NAME!;
 const publicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL!;
 
 const SIZES = {
-    mobile: { width: 480 },
-    desktop: { width: 1024 },
+    mobile: { width: 768, quality: 100 },
+    desktop: { width: 1024, quality: 100 },
 };
 
 async function uploadToR2WithRetry(buffer: Buffer, key: string, contentType: string, retries = 3) {
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
                 // Resize and convert to WebP
                 const resizedBuffer = await sharp(imageBuffer)
                     .resize({ width: sizeSpec.width, withoutEnlargement: true })
-                    .webp({ quality: 90 })
+                    .webp({ quality: sizeSpec.quality || 90 })
                     .toBuffer();
 
                 const key = `${encodedOutfitId}/image_${index + 1}_${sizeName}.webp`;
